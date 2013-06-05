@@ -19,21 +19,31 @@ Testing sites locally
 
 The Siteleaf gem allows you to test and develop your sites locally.
 
-Set up a new site locally:
+**Set up a new site locally:**
 
     siteleaf new yoursite.com
 
-Configure an existing site:
+This will create a new theme folder in the directory where you ran this command. It will also create the site for you in your Siteleaf account.
+
+**Configure an existing site:**
 
     siteleaf config yoursite.com
 
+**(Optional) Install Pow for extra goodness:**
+
 If using [Pow](http://pow.cx), your local website will be automatically set up and can be accessed at `http://yoursite.dev`.
 
-Local sites can also be manually run:
+If you don't have Pow (or Anvil) installed, run:
+
+    curl get.pow.cx | sh
+
+**Or if you don't want to install Pow, local sites can also be manually run:**
 
     siteleaf server
   
 In this case, your local site can be accessed at `http://localhost:9292`.
+
+**Lastly...**
 
 Your local folder should contain at least one template file (`default.html`), for sample themes and documentation see: https://github.com/siteleaf/siteleaf-themes
 
