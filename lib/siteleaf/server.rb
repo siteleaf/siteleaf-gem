@@ -25,7 +25,7 @@ module Siteleaf
       templates.push("default.html")
       
       templates.each do |t|
-        return File.read(t) if File.exists?(t)
+        return File.read(t) if File.exist?(t)
       end
       
       return nil
@@ -37,7 +37,7 @@ module Siteleaf
       url = env['PATH_INFO']
       path = url.gsub(/\/\z|\A\//, '') #strip beginning and trailing slashes
       
-      if !File.directory?(path) and File.exists?(path)
+      if !File.directory?(path) and File.exist?(path)
         Rack::File.new(Dir.pwd).call(env)
       else
         template_data = nil

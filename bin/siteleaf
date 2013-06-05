@@ -20,7 +20,7 @@ def auth(re_auth = false)
     
     print "\nAuthorizing...\n"
     
-    if auth = Siteleaf::Client.auth(email, password) and auth.has_key?('api_key')    
+    if auth = Siteleaf::Client.auth(email, password) and auth.is_a?(Hash) and auth.has_key?('api_key')    
       File.open(Siteleaf.settings_file,'w') do|file|
         Marshal.dump({:api_key => auth['api_key'], :api_secret => auth['api_secret']}, file)
       end
@@ -36,14 +36,14 @@ def config(site)
 # See https://github.com/siteleaf/siteleaf-gem for documentation.
 
 require 'siteleaf'
-run Siteleaf::Server.new(site_id:'#{site.id}')" }
+run Siteleaf::Server.new(:site_id => '#{site.id}')" }
   
   pow_path = "#{Etc.getpwuid.dir}/.pow"
-  if Dir.exists?(pow_path)
+  if File.directory?(pow_path)
     site_no_tld = site.domain.gsub(/\.[a-z]{0,4}$/i,'')
     site_symlink = "#{pow_path}/#{site_no_tld}"
     FileUtils.rm(site_symlink) if File.symlink?(site_symlink)
-    FileUtils.symlink(File.absolute_path("."), site_symlink)
+    FileUtils.symlink(File.dirname(__FILE__), site_symlink)
     puts "=> Site configured with Pow, open `http://#{site_no_tld}.dev` to test site locally.\n"
   else
     puts "=> Site configured, run `siteleaf server` to test site locally.\n"
@@ -56,7 +56,7 @@ when '-v', '--version'
 when '-h', '--help'
   puts help
 when 's', 'server'
-  if File.exists?('config.ru')
+  if File.exist?('config.ru')
     `rackup config.ru`
   else
     puts "No config found, run `siteleaf config yoursite.com`.\n"
@@ -74,7 +74,7 @@ when 'n', 'new'
   auth
   if site = Siteleaf::Site.create(:title => ARGV[1], :domain => ARGV[1])
     dir = ARGV.size >= 3 ? ARGV[2] : ARGV[1]
-    Dir.mkdir(dir) unless Dir.exists?(dir)
+    Dir.mkdir(dir) unless File.directory?(dir)
     Dir.chdir(dir)
     config site
   else

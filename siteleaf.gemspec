@@ -12,11 +12,11 @@ Gem::Specification.new do |gem|
   gem.summary       = "Siteleaf Ruby interface"
   gem.homepage      = "http://siteleaf.com"
   
-  # gem.required_ruby_version = '>= 1.9.2'
+  gem.required_ruby_version = '>= 1.8'
   
   gem.add_dependency 'rest-client'
   gem.add_dependency 'json'
-  # gem.add_dependency 'liquid'
+  gem.add_dependency 'rack'
 
   gem.files         = `git ls-files`.split($/)
   gem.files         += Dir.glob("lib/**/*.rb")
