@@ -18,15 +18,15 @@ def auth(re_auth = false)
     password = $stdin.gets.chomp
     system 'stty echo'
     
-    print "\nAuthorizing...\n"
+    puts "Authorizing..."
     
     if auth = Siteleaf::Client.auth(email, password) and auth.is_a?(Hash) and auth.has_key?('api_key')    
       File.open(Siteleaf.settings_file,'w') do|file|
         Marshal.dump({:api_key => auth['api_key'], :api_secret => auth['api_secret']}, file)
       end
-      print "=> Gem authorized.\n" if re_auth
+      puts "=> Gem authorized." if re_auth
     else
-      print "Could not authorize, check your e-mail or password.\n"
+      puts "Could not authorize, check your e-mail or password."
     end
   end
 end

@@ -1,8 +1,8 @@
 module Siteleaf
   class Site < Entity
 
-    attr_accessor :id, :title, :domain, :timezone, :user_id, :created_at, :updated_at
-    protected :id=, :user_id=, :created_at=, :updated_at=
+    attr_accessor :title, :domain, :timezone
+    attr_reader :id, :user_id, :created_at, :updated_at
     
     def self.find_by_domain(domain)
       result = Client.get "sites", {"domain" => domain}

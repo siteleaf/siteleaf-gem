@@ -1,5 +1,6 @@
 module Siteleaf
   class Server
+  
     attr_accessor :site_id
     
     def initialize(attributes = {})

@@ -28,7 +28,7 @@ module Siteleaf
   end
   
   def self.load_settings
-    if File.exists?(self.settings_file)
+    if File.exist?(self.settings_file)
       config = File.open(self.settings_file) do|file|
         Marshal.load(file)
       end

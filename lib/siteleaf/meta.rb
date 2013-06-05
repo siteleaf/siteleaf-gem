@@ -1,8 +1,8 @@
 module Siteleaf
   class Meta < Entity
 
-    attr_accessor :id, :key, :value, :page_id, :post_id
-    protected :id=
+    attr_accessor :key, :value, :page_id, :post_id
+    attr_reader :id
     
     def create_endpoint
       if self.page_id

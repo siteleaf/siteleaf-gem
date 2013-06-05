@@ -32,16 +32,16 @@ module Siteleaf
     def self.execute(method, path, payload = nil, params = nil)
       Siteleaf.load_settings if !Siteleaf.api_key
       request = RestClient::Request.new(:url => Siteleaf.api_url(path), :method => method, :payload => payload, :headers => { :params => params }, :user => Siteleaf.api_key, :password => Siteleaf.api_secret)
-      begin
+      #begin
         response = request.execute
         if response.headers[:content_type].to_s.include?('json')
           return JSON.parse(response) # parse JSON
         else
           return response # raw
         end
-      rescue => e
-        return e.inspect # error
-      end
+      #rescue => e
+      #  return e.inspect # error
+      #end
     end
   end
 end

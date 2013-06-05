@@ -1,8 +1,8 @@
 module Siteleaf
   class Page < Entity
 
-    attr_accessor :id, :title, :body, :slug, :url, :parent_id, :site_id, :published_at, :created_at, :updated_at, :meta
-    protected :id=, :created_at=, :updated_at=
+    attr_accessor :title, :body, :slug, :url, :parent_id, :site_id, :published_at, :meta
+    attr_reader :id, :created_at, :updated_at
     
     def create_endpoint
       "sites/#{self.site_id}/pages"

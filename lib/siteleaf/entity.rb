@@ -44,7 +44,7 @@ module Siteleaf
     end
     
     def attributes=(attributes = {})
-      attributes.each_pair { |k, v| k != "attributes" and respond_to?(name = "#{k}=") and send(name, v) }
+      attributes.each_pair { |k, v| k != "attributes" and self.instance_variable_set("@#{k}", v) }
     end
     
     def self.class_name
