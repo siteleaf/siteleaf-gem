@@ -1,0 +1,86 @@
+#!/usr/bin/env ruby
+
+require 'siteleaf'
+
+def help
+  'See https://github.com/siteleaf/siteleaf-gem for documentation.'
+end
+
+def auth(re_auth = false)
+  Siteleaf.load_settings if !re_auth
+  
+  if re_auth or !Siteleaf.api_key
+    print 'Enter your Siteleaf e-mail: '
+    email = $stdin.gets.chomp
+  
+    print 'Enter your Siteleaf password: '
+    system 'stty -echo'
+    password = $stdin.gets.chomp
+    system 'stty echo'
+    
+    print "\nAuthorizing...\n"
+    
+    if auth = Siteleaf::Client.auth(email, password) and auth.has_key?('api_key')    
+      File.open(Siteleaf.settings_file,'w') do|file|
+        Marshal.dump({:api_key => auth['api_key'], :api_secret => auth['api_secret']}, file)
+      end
+      print "=> Gem authorized.\n" if re_auth
+    else
+      print "Could not authorize, check your e-mail or password.\n"
+    end
+  end
+end
+
+def config(site)
+  File.open('config.ru', 'w') { |file| file.write "# Intended for development purposes only, do not upload or use in production.
+# See https://github.com/siteleaf/siteleaf-gem for documentation.
+
+require 'siteleaf'
+run Siteleaf::Server.new(site_id:'#{site.id}')" }
+  
+  pow_path = "#{Etc.getpwuid.dir}/.pow"
+  if Dir.exists?(pow_path)
+    site_no_tld = site.domain.gsub(/\.[a-z]{0,4}$/i,'')
+    site_symlink = "#{pow_path}/#{site_no_tld}"
+    FileUtils.rm(site_symlink) if File.symlink?(site_symlink)
+    FileUtils.symlink(File.absolute_path("."), site_symlink)
+    puts "=> Site configured with Pow, open `http://#{site_no_tld}.dev` to test site locally.\n"
+  else
+    puts "=> Site configured, run `siteleaf server` to test site locally.\n"
+  end
+end
+
+case ARGV[0]
+when '-v', '--version'
+  puts Siteleaf::VERSION
+when '-h', '--help'
+  puts help
+when 's', 'server'
+  if File.exists?('config.ru')
+    `rackup config.ru`
+  else
+    puts "No config found, run `siteleaf config yoursite.com`.\n"
+  end
+when 'auth'
+  auth true
+when 'c', 'config', 'setup'
+  auth
+  if site = Siteleaf::Site.find_by_domain(ARGV[1])
+    config site
+  else
+    puts "No site found for `#{ARGV[1]}`, run `siteleaf new #{ARGV[1]}` to create it.\n"
+  end
+when 'n', 'new'
+  auth
+  if site = Siteleaf::Site.create(:title => ARGV[1], :domain => ARGV[1])
+    dir = ARGV.size >= 3 ? ARGV[2] : ARGV[1]
+    Dir.mkdir(dir) unless Dir.exists?(dir)
+    Dir.chdir(dir)
+    config site
+  else
+    puts "Could not create site `#{ARGV[1]}`.\n"
+  end
+else
+  puts "`#{ARGV[0]}` command not found.\n"
+  puts help
+end
