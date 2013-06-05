@@ -1,15 +1,16 @@
-Siteleaf
-==========
+Siteleaf Gem
+============
 
 Installation
 ------------
 
-Build gem from source:
+The Siteleaf gem is available for installation on [Rubygems](https://rubygems.org/gems/siteleaf). To install run:
+
+    gem install siteleaf
+
+Or clone and build from source:
 
     gem build siteleaf.gemspec
-
-Then install with:
-
     gem install siteleaf
 
 
