@@ -15,11 +15,6 @@ The Siteleaf gem is available for installation on [Rubygems](https://rubygems.or
 
     gem install siteleaf
 
-Or clone and build from source:
-
-    gem build siteleaf.gemspec
-    gem install siteleaf
-
 
 Testing sites locally
 ---------------------
