@@ -11,10 +11,6 @@ Build gem from source:
 Then install with:
 
     gem install siteleaf
-    
-To use this gem in your application, add the following to your Gemfile:
-
-    gem 'siteleaf', :git => 'git://github.com/siteleaf/siteleaf-gem.git'
 
 
 Testing sites locally
@@ -37,6 +33,16 @@ Local sites can also be manually run:
     siteleaf server
   
 In this case, your local site can be accessed at `http://localhost:9292`.
+
+Your local folder should contain at least one template file (`default.html`), for sample themes and documentation see: https://github.com/siteleaf/siteleaf-themes
+
+
+Using this gem in your application
+----------------------------------
+    
+To use this gem in your application, add the following to your Gemfile:
+
+    gem 'siteleaf', :git => 'git://github.com/siteleaf/siteleaf-gem.git'
 
 
 Using the API
