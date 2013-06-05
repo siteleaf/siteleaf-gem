@@ -1,6 +1,13 @@
 Siteleaf Gem
 ============
 
+- [Installation](#installation)
+- [Testing sites locally](#testing-sites-locally)
+- [Using this gem in your application](#using-this-gem-in-your-application)
+- [Using the API](#using-the-api)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+
 Installation
 ------------
 
@@ -117,6 +124,23 @@ page.delete
 # delete page by id
 Siteleaf::Page.delete('519719ddcc85910626000001')
 ```
+
+Troubleshooting
+------------
+
+**I can't install the Gem**
+
+Try running:
+
+    sudo gem install siteleaf
+
+**I'm getting a message mentioning** `undefined method 'exists?'`
+
+Check what version of Ruby you're running:
+
+    ruby -v
+
+If it's below 1.9, you'll need to update your version of ruby.
 
 
 Contributing
