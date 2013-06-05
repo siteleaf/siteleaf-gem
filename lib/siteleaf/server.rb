@@ -59,7 +59,11 @@ module Siteleaf
           end
         
           output = site.preview(url, template_data)
-          [200, {'Content-Type' => output.headers[:content_type]}, [output]]
+          if output.respond_to?('headers')
+            [200, {'Content-Type' => output.headers[:content_type]}, [output]]
+          else
+            [200, {'Content-Type' => 'text/html'}, [output]]
+          end
         end
       end
     end
