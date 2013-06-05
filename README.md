@@ -19,27 +19,27 @@ The Siteleaf gem is available for installation on [Rubygems](https://rubygems.or
 Testing sites locally
 ---------------------
 
-The Siteleaf gem allows you to test and develop your sites locally.
+The Siteleaf gem allows you to test and develop your sites locally. If using [Pow](http://pow.cx) or [Anvil](http://anvilformac.com), your local website will be automatically set up and can be accessed at `http://yoursite.dev`.
+
+**(Optional) Install Pow for extra goodness:**
+
+    curl get.pow.cx | sh
 
 **Set up a new site locally:**
 
     siteleaf new yoursite.com
 
-This will create a new theme folder in the directory where you ran this command. It will also create the site for you in your Siteleaf account.
+This will create a new theme folder called `yoursite.com` in the directory where you ran this command. It will also create the site for you in your Siteleaf account. If you prefer not to create a new directory, run `siteleaf new yoursite.com .` instead.
 
 **Configure an existing site:**
 
     siteleaf config yoursite.com
 
-**(Optional) Install Pow for extra goodness:**
+Your site should now be accessible at `http://yoursite.dev`.
 
-If using [Pow](http://pow.cx), your local website will be automatically set up and can be accessed at `http://yoursite.dev`.
+*or*
 
-If you don't have Pow (or Anvil) installed, run:
-
-    curl get.pow.cx | sh
-
-**Or if you don't want to install Pow, local sites can also be manually run:**
+**If you don't want to install Pow, local sites can also be manually run:**
 
     siteleaf server
   
@@ -48,6 +48,8 @@ In this case, your local site can be accessed at `http://localhost:9292`.
 **Lastly...**
 
 Your local folder should contain at least one template file (`default.html`), for sample themes and documentation see: https://github.com/siteleaf/siteleaf-themes
+
+For new sites, you will also need to create at least one page or post on https://manage.siteleaf.com in order to preview.
 
 
 Using this gem in your application
