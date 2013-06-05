@@ -129,14 +129,6 @@ Try running:
 
     sudo gem install siteleaf
 
-**I'm getting a message mentioning** `undefined method 'exists?'`
-
-Check what version of Ruby you're running:
-
-    ruby -v
-
-If it's below 1.9, you'll need to update your version of ruby.
-
 
 Contributing
 ------------
