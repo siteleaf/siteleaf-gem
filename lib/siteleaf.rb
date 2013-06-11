@@ -10,6 +10,7 @@ require 'siteleaf/page'
 require 'siteleaf/post'
 require 'siteleaf/meta'
 require 'siteleaf/user'
+require 'rbconfig'
 
 module Siteleaf
 
@@ -24,7 +25,11 @@ module Siteleaf
   end
   
   def self.settings_file
-    "#{Etc.getpwuid.dir}/.siteleaf"
+    if is_windows = (RbConfig::CONFIG[ 'host_os' ] =~ /mswin|mingw|cygwin/)
+      "#{File.expand_path('~')}/.siteleaf"
+    else
+      "#{Etc.getpwuid.dir}/.siteleaf"
+    end
   end
   
   def self.load_settings
