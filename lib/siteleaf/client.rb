@@ -14,7 +14,7 @@ module Siteleaf
     end
   
     def self.get(path, params = nil)
-      self.execute(:get, path, nil, params)
+      self.execute(:get, path, params)
     end
     
     def self.post(path, params)
@@ -25,13 +25,13 @@ module Siteleaf
      self.execute(:put, path, params)
     end
     
-    def self.delete(path)
-      self.execute(:delete, path)
+    def self.delete(path, params = nil)
+      self.execute(:delete, path, params)
     end
     
-    def self.execute(method, path, payload = nil, params = nil)
+    def self.execute(method, path, params = nil)
       Siteleaf.load_settings if !Siteleaf.api_key
-      request = RestClient::Request.new(:url => Siteleaf.api_url(path), :method => method, :payload => payload, :headers => { :params => params }, :user => Siteleaf.api_key, :password => Siteleaf.api_secret)
+      request = RestClient::Request.new(:url => Siteleaf.api_url(path), :method => method, :payload => params, :user => Siteleaf.api_key, :password => Siteleaf.api_secret)
       #begin
         response = request.execute
         if response.headers[:content_type].to_s.include?('json')

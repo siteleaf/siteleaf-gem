@@ -8,7 +8,6 @@ require 'siteleaf/entity'
 require 'siteleaf/site'
 require 'siteleaf/page'
 require 'siteleaf/post'
-require 'siteleaf/meta'
 require 'siteleaf/user'
 require 'rbconfig'
 

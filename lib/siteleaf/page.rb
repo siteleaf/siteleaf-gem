@@ -4,6 +4,16 @@ module Siteleaf
     attr_accessor :title, :body, :slug, :url, :parent_id, :site_id, :published_at, :meta
     attr_reader :id, :created_at, :updated_at
     
+    def self.all
+      result = Client.get "#{self.endpoint}", {'include' => ['meta']}
+      result.map { |r| self.new(r) } if result
+    end
+    
+    def self.find(id)
+      result = Client.get "#{self.endpoint}/#{id}", {'include' => ['meta']}
+      self.new(result) if result
+    end
+    
     def create_endpoint
       "sites/#{self.site_id}/pages"
     end
@@ -13,12 +23,12 @@ module Siteleaf
     end
     
     def posts
-      result = Client.get "pages/#{self.id}/posts"
+      result = Client.get "pages/#{self.id}/posts", {'include' => ['meta','taxonomy']}
       result.map { |r| Post.new(r) } if result
     end
     
     def pages
-      result = Client.get "pages/#{self.id}/pages"
+      result = Client.get "pages/#{self.id}/pages", {'include' => ['meta']}
       result.map { |r| self.new(r) } if result
     end
     
