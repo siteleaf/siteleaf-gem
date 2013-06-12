@@ -8,19 +8,19 @@ end
 
 def auth(re_auth = false)
   Siteleaf.load_settings if !re_auth
-  
+
   if re_auth or !Siteleaf.api_key
     print 'Enter your Siteleaf e-mail: '
     email = $stdin.gets.chomp
-  
+
     print 'Enter your Siteleaf password: '
     system 'stty -echo'
     password = $stdin.gets.chomp
     system 'stty echo'
-    
+
     puts "Authorizing..."
-    
-    if auth = Siteleaf::Client.auth(email, password) and auth.is_a?(Hash) and auth.has_key?('api_key')    
+
+    if auth = Siteleaf::Client.auth(email, password) and auth.is_a?(Hash) and auth.has_key?('api_key')
       File.open(Siteleaf.settings_file,'w') do|file|
         Marshal.dump({:api_key => auth['api_key'], :api_secret => auth['api_secret']}, file)
       end
@@ -37,16 +37,19 @@ def config(site)
 
 require 'siteleaf'
 run Siteleaf::Server.new(:site_id => '#{site.id}')" }
-  
-  pow_path = "#{Etc.getpwuid.dir}/.pow"
-  if File.directory?(pow_path)
-    site_no_tld = site.domain.gsub(/\.[a-z]{0,4}$/i,'')
-    site_symlink = "#{pow_path}/#{site_no_tld}"
-    FileUtils.rm(site_symlink) if File.symlink?(site_symlink)
-    FileUtils.symlink(File.dirname(__FILE__), site_symlink)
-    puts "=> Site configured with Pow, open `http://#{site_no_tld}.dev` to test site locally.\n"
-  else
-    puts "=> Site configured, run `siteleaf server` to test site locally.\n"
+
+  if is_mac = (RbConfig::CONFIG[ 'host_os' ] =~ /mac|darwin/)
+    pow_path = "#{Etc.getpwuid.dir}/.pow"
+  end
+
+  if is_mac = (RbConfig::CONFIG[ 'host_os' ] =~ /mac|darwin/) and File.directory?(pow_path)
+      site_no_tld = site.domain.gsub(/\.[a-z]{0,4}$/i,'')
+      site_symlink = "#{pow_path}/#{site_no_tld}"
+      FileUtils.rm(site_symlink) if File.symlink?(site_symlink)
+      FileUtils.symlink(File.dirname(__FILE__), site_symlink)
+      puts "=> Site configured with Pow, open `http://#{site_no_tld}.dev` to test site locally.\n"
+    else
+      puts "=> Site configured, run `siteleaf server` to test site locally.\n"
   end
 end
 
