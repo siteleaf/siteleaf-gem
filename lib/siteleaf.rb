@@ -24,11 +24,7 @@ module Siteleaf
   end
 
   def self.settings_file
-    if is_windows = (RbConfig::CONFIG[ 'host_os' ] =~ /mswin|mingw|cygwin/)
-      "#{File.expand_path('~')}/.siteleaf"
-    else
-      "#{Etc.getpwuid.dir}/.siteleaf"
-    end
+    File.expand_path('~/.siteleaf')
   end
 
   def self.load_settings
