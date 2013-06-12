@@ -18,7 +18,7 @@ def auth(re_auth = false)
     password = $stdin.gets.chomp
     system 'stty echo'
     
-    puts "Authorizing..."
+    puts "\nAuthorizing..."
     
     if auth = Siteleaf::Client.auth(email, password) and auth.is_a?(Hash) and auth.has_key?('api_key')    
       File.open(Siteleaf.settings_file,'w') do|file|

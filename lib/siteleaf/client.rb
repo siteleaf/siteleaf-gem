@@ -1,13 +1,11 @@
-require 'rest-client'
-require 'json'
+require 'httparty'
 
 module Siteleaf
   class Client  
     def self.auth(email, password)
-      request = RestClient::Request.new(:url => Siteleaf.api_url('auth'), :method => :post, :user => email, :password => password)
       begin
-        response = request.execute
-        return JSON.parse(response) # parse JSON
+        request = HTTParty.post(Siteleaf.api_url('auth'), {:basic_auth => {:username => email, :password => password}})
+        return request.parsed_response # parse JSON
       rescue => e
         return e.inspect # error
       end
@@ -31,17 +29,16 @@ module Siteleaf
     
     def self.execute(method, path, params = nil)
       Siteleaf.load_settings if !Siteleaf.api_key
-      request = RestClient::Request.new(:url => Siteleaf.api_url(path), :method => method, :payload => params, :user => Siteleaf.api_key, :password => Siteleaf.api_secret)
-      #begin
-        response = request.execute
-        if response.headers[:content_type].to_s.include?('json')
-          return JSON.parse(response) # parse JSON
+      begin
+        request = HTTParty.send(method, Siteleaf.api_url(path), {:body => params, :basic_auth => {:username => Siteleaf.api_key, :password => Siteleaf.api_secret}})
+        if request.respond_to?('parsed_response')
+          return request.parsed_response # parse JSON
         else
-          return response # raw
+          return request # raw
         end
-      #rescue => e
-      #  return e.inspect # error
-      #end
+      rescue => e
+        return e.inspect # error
+      end
     end
   end
 end

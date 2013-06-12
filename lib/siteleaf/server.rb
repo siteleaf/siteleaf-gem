@@ -42,7 +42,7 @@ module Siteleaf
         Rack::File.new(Dir.pwd).call(env)
       else
         template_data = nil
-        is_asset = /(^assets|\.)/.match(path)
+        is_asset = /^(?!(sitemap|feed)\.xml)(assets|.*\.)/.match(path)
         
         if is_asset 
           if asset = site.resolve(url) and asset_url = asset['file']['url']

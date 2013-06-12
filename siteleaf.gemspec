@@ -14,8 +14,8 @@ Gem::Specification.new do |gem|
   
   gem.required_ruby_version = '>= 1.8'
   
-  gem.add_dependency 'rest-client'
-  gem.add_dependency 'json'
+  gem.add_dependency 'json', '~> 1.7.7'
+  gem.add_dependency 'httparty'
   gem.add_dependency 'rack'
 
   gem.files         = `git ls-files`.split($/)

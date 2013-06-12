@@ -110,9 +110,10 @@ page = Siteleaf::Page.create({
 # get page by id
 page = Siteleaf::Page.find('519719ddcc85910626000001')
 
-# update page, add metadata
+# update page, add metadata, add taxonomy
 page.title = 'New Title'
-page.meta = [{"key" => "foo", "value" => "bar"}]
+page.meta = [ {"key" => "foo", "value" => "bar"} ]
+post.taxonomy = [ {"key" => "Tags", "values" => ["One","Two","Three"]} ]
 page.save
 
 # delete page
