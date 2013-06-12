@@ -63,7 +63,7 @@ To use this gem in your application, add the following to your Gemfile:
 Using the API
 -------------
 
-This gem also allows you to interact with the Siteleaf API.
+This gem also allows you to interact with the [Siteleaf API](https://github.com/siteleaf/siteleaf-api).
 
 ```ruby
 require 'siteleaf'
