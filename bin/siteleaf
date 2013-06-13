@@ -2,6 +2,10 @@
 
 require 'siteleaf'
 require 'fileutils'
+require 'open-uri'
+require 'digest/md5'
+require 'securerandom'
+require 'zip'
 
 def help
   'See https://github.com/siteleaf/siteleaf-gem for documentation.'
@@ -51,6 +55,47 @@ run Siteleaf::Server.new(:site_id => '#{site.id}')" }
   end
 end
 
+def get_site_id
+  if File.exist?('config.ru')
+    if match = /:site_id => '([a-z0-9]{24})'/i.match(File.read('config.ru'))
+      return match[1]
+    end
+  end
+end
+
+def get_theme_assets(site_id)
+  if assets = Siteleaf::Client.get("sites/#{site_id}/theme/assets")
+    updated_count = 0
+    assets.each do |asset|
+      if File.exist?(asset['filename']) && (file = File.read(asset['filename'])) && (Digest::MD5.hexdigest(file) == asset['checksum'])
+        # file is up to date
+      else
+        file = open("#{asset['file']['url']}?#{SecureRandom.hex(16)}", 'r:UTF-8') { |f| f.read }
+        FileUtils.mkdir_p(File.dirname(asset['filename']))
+        File.open(asset['filename'], 'w:UTF-8') { |f| f.write(file) }
+        updated_count += 1
+      end
+    end
+    puts "=> #{updated_count} asset(s) downloaded.\n"
+  end
+end
+
+def put_theme_assets(site_id)
+  theme = 'theme.zip'
+  FileUtils.rm(theme) if File.exist?(theme)
+  Zip::ZipFile.open(theme, Zip::ZipFile::CREATE) do |zip|
+    Dir.glob("**/*").each do |path|
+      zip.add(path, path)
+    end
+  end
+  if response = Siteleaf::Client.post("sites/#{site_id}/theme/assets", {:file => File.new(theme), :replace => true})
+    puts "=> Assets uploaded.\n"
+  else
+    puts "=> Could not upload assets.\n"
+  end
+  FileUtils.rm(theme) if File.exist?(theme)
+end
+
 case ARGV[0]
 when '-v', '--version'
   puts Siteleaf::VERSION
@@ -80,6 +125,30 @@ when 'n', 'new'
     config site
   else
     puts "Could not create site `#{ARGV[1]}`.\n"
+  end
+when 'pull'
+  case ARGV[1]
+  when 'theme'
+    auth
+    if site_id = get_site_id
+      get_theme_assets(site_id)
+    else
+      puts "Site not configured, run `siteleaf config yoursite.com`.\n"
+    end
+  else
+    puts "`#{ARGV[0]}` command not found.\n"
+  end
+when 'put'
+  case ARGV[1]
+  when 'theme'
+    auth
+    if site_id = get_site_id
+      put_theme_assets(site_id)
+    else
+      puts "Site not configured, run `siteleaf config yoursite.com`.\n"
+    end 
+  else
+    puts "`#{ARGV[0]}` command not found.\n"
   end
 else
   puts "`#{ARGV[0]}` command not found.\n"

@@ -5,12 +5,12 @@ module Siteleaf
     attr_reader :id, :created_at, :updated_at
     
     def self.all
-      result = Client.get "#{self.endpoint}", {'include' => ['meta']}
+      result = Client.get "#{self.endpoint}"
       result.map { |r| self.new(r) } if result
     end
     
     def self.find(id)
-      result = Client.get "#{self.endpoint}/#{id}", {'include' => ['meta']}
+      result = Client.get "#{self.endpoint}/#{id}"
       self.new(result) if result
     end
     
@@ -23,12 +23,12 @@ module Siteleaf
     end
     
     def posts
-      result = Client.get "pages/#{self.id}/posts", {'include' => ['meta','taxonomy']}
+      result = Client.get "pages/#{self.id}/posts"
       result.map { |r| Post.new(r) } if result
     end
     
     def pages
-      result = Client.get "pages/#{self.id}/pages", {'include' => ['meta']}
+      result = Client.get "pages/#{self.id}/pages"
       result.map { |r| self.new(r) } if result
     end
     

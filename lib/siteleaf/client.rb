@@ -1,4 +1,4 @@
-require 'httparty'
+require 'httmultiparty'
 
 module Siteleaf
   class Client  
@@ -30,7 +30,7 @@ module Siteleaf
     def self.execute(method, path, params = nil)
       Siteleaf.load_settings if !Siteleaf.api_key
       begin
-        request = HTTParty.send(method, Siteleaf.api_url(path), {:body => params, :basic_auth => {:username => Siteleaf.api_key, :password => Siteleaf.api_secret}})
+        request = HTTMultiParty.send(method, Siteleaf.api_url(path), {:query => params, :basic_auth => {:username => Siteleaf.api_key, :password => Siteleaf.api_secret}})
         if request.respond_to?('parsed_response')
           return request.parsed_response # parse JSON
         else
