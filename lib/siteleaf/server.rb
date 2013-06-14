@@ -12,18 +12,22 @@ module Siteleaf
       paths = path.split("/")
       templates = []
     
-      if path == ""
-        templates.push("index.html")
+      if ['sitemap.xml','feed.xml'].include?(path)
+        templates.push(path)
       else
-        templates.push("#{paths.join('/')}.html")
-        templates.push("#{paths.join('/')}/index.html")
-        templates.push("#{paths.join('/')}/default.html")
-        while paths.size > 0
-          paths.pop
-          templates.push("#{paths.join('/')}/default.html") if paths.size > 0
+        if path == ""
+          templates.push("index.html")
+        else
+          templates.push("#{paths.join('/')}.html")
+          templates.push("#{paths.join('/')}/index.html")
+          templates.push("#{paths.join('/')}/default.html")
+          while paths.size > 0
+            paths.pop
+            templates.push("#{paths.join('/')}/default.html") if paths.size > 0
+          end
         end
+        templates.push("default.html")
       end
-      templates.push("default.html")
       
       templates.each do |t|
         return File.read(t) if File.exist?(t)
