@@ -8,24 +8,43 @@ require 'securerandom'
 require 'zip'
 
 def help
-  'See https://github.com/siteleaf/siteleaf-gem for documentation.'
+  %Q(
+Usage: siteleaf [COMMAND] [OPTIONS]
+
+Commands:
+  auth                Login in with your credentials
+  s, server           Starts a local server.
+  c, config DOMAIN    Configure an existing directory
+  n, new DOMAIN       Creates new site on siteleaf.net
+  pull theme          Pulls theme files for configured site from Siteleaf
+  push theme          Pushes all files in dir as theme to configured site.
+  help                Prints this help document
+  version             Prints the siteleaf gem version
+
+Options:
+  -h, --help          Prints this help document
+  -v, --version       Prints the siteleaf gem version
+  -p, --port PORT     Binds local server to PORT (default: 9292)
+
+See https://github.com/siteleaf/siteleaf-gem for additional documentation.
+)
 end
 
 def auth(re_auth = false)
   Siteleaf.load_settings if !re_auth
-  
+
   if re_auth or !Siteleaf.api_key
     print 'Enter your Siteleaf e-mail: '
     email = $stdin.gets.chomp
-  
+
     print 'Enter your Siteleaf password: '
     system 'stty -echo'
     password = $stdin.gets.chomp
     system 'stty echo'
-    
+
     puts "\nAuthorizing..."
-    
-    if auth = Siteleaf::Client.auth(email, password) and auth.is_a?(Hash) and auth.has_key?('api_key')    
+
+    if auth = Siteleaf::Client.auth(email, password) and auth.is_a?(Hash) and auth.has_key?('api_key')
       File.open(Siteleaf.settings_file,'w') do|file|
         Marshal.dump({:api_key => auth['api_key'], :api_secret => auth['api_secret']}, file)
       end
@@ -42,7 +61,7 @@ def config(site)
 
 require 'siteleaf'
 run Siteleaf::Server.new(:site_id => '#{site.id}')" }
-  
+
   pow_path = File.expand_path('~/.pow')
   if File.directory?(pow_path)
     site_no_tld = site.domain.gsub(/\.[a-z]{0,4}$/i,'')
@@ -98,13 +117,14 @@ def put_theme_assets(site_id)
 end
 
 case ARGV[0]
-when '-v', '--version'
+when '-v', '--version', 'version'
   puts Siteleaf::VERSION
-when '-h', '--help'
+when '-h', '--help', 'help'
   puts help
 when 's', 'server'
   if File.exist?('config.ru')
-    `rackup config.ru`
+    port = ARGV[2] if %w[-p --port].include?(ARGV[1]) && ARGV[1]
+    `rackup config.ru -p #{port || '9292'}`
   else
     puts "No config found, run `siteleaf config yoursite.com`.\n"
   end
@@ -147,7 +167,7 @@ when 'push'
       put_theme_assets(site_id)
     else
       puts "Site not configured, run `siteleaf config yoursite.com`.\n"
-    end 
+    end
   else
     puts "`#{ARGV[0]}` command not found.\n"
   end
