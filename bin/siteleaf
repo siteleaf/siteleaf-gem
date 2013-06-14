@@ -89,7 +89,8 @@ def put_theme_assets(site_id)
     end
   end
   if response = Siteleaf::Client.post("sites/#{site_id}/theme/assets", {:file => File.new(theme), :replace => true})
-    puts "=> Assets uploaded.\n"
+    updated_count = response.is_a?(Array) ? response.size : 1
+    puts "=> #{updated_count} asset(s) uploaded.\n"
   else
     puts "=> Could not upload assets.\n"
   end
