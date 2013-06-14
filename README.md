@@ -51,6 +51,18 @@ Your local folder should contain at least one template file (`default.html`), fo
 
 For new sites, you will also need to create at least one page or post on https://manage.siteleaf.com in order to preview.
 
+**Download your theme:**
+
+To download your theme (or the default theme for new sites) from Siteleaf, run the following command:
+
+    siteleaf pull theme
+
+**Upload your theme:**
+
+To upload your theme to Siteleaf, run the following command:
+
+    siteleaf push theme
+
 
 Using this gem in your application
 ----------------------------------
