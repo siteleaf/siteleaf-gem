@@ -139,7 +139,7 @@ when 'pull'
   else
     puts "`#{ARGV[0]}` command not found.\n"
   end
-when 'put'
+when 'push'
   case ARGV[1]
   when 'theme'
     auth
