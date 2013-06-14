@@ -85,7 +85,7 @@ def put_theme_assets(site_id)
   FileUtils.rm(theme) if File.exist?(theme)
   Zip::ZipFile.open(theme, Zip::ZipFile::CREATE) do |zip|
     Dir.glob("**/*").each do |path|
-      zip.add(path, path)
+      zip.add(path, path) if !['config.ru'].include?(path) && !path.start_with?('.')
     end
   end
   if response = Siteleaf::Client.post("sites/#{site_id}/theme/assets", {:file => File.new(theme), :replace => true})

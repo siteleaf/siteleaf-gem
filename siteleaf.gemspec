@@ -17,6 +17,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'json', '~> 1.7.7'
   gem.add_dependency 'httparty'
   gem.add_dependency 'httmultiparty'
+  gem.add_dependency 'zip'
   gem.add_dependency 'rack'
 
   gem.files         = `git ls-files`.split($/)
