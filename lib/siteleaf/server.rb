@@ -42,7 +42,7 @@ module Siteleaf
       url = env['PATH_INFO']
       path = url.gsub(/\/\z|\A\//, '') #strip beginning and trailing slashes
       
-      if !File.directory?(path) and File.exist?(path)
+      if !['sitemap.xml','feed.xml'].include?(path) and !File.directory?(path) and File.exist?(path)
         Rack::File.new(Dir.pwd).call(env)
       else
         template_data = nil
