@@ -58,7 +58,7 @@ end
 def config(site)
   File.open('config.ru', 'w') { |file| file.write "# Intended for development purposes only, do not upload or use in production.
 # See https://github.com/siteleaf/siteleaf-gem for documentation.
-
+require 'rubygems'
 require 'siteleaf'
 run Siteleaf::Server.new(:site_id => '#{site.id}')" }
 
@@ -89,9 +89,9 @@ def get_theme_assets(site_id)
       if File.exist?(asset['filename']) && (file = File.read(asset['filename'])) && (Digest::MD5.hexdigest(file) == asset['checksum'])
         # file is up to date
       else
-        file = open("#{asset['file']['url']}?#{SecureRandom.hex(16)}", 'r:UTF-8') { |f| f.read }
+        file = open("#{asset['file']['url']}?#{SecureRandom.hex(16)}", /^1\.8/.match(RUBY_VERSION) ? 'r' : 'r:UTF-8') { |f| f.read }
         FileUtils.mkdir_p(File.dirname(asset['filename']))
-        File.open(asset['filename'], 'w:UTF-8') { |f| f.write(file) }
+        File.open(asset['filename'], /^1\.8/.match(RUBY_VERSION) ? 'w' : 'w:UTF-8') { |f| f.write(file) }
         updated_count += 1
       end
     end
