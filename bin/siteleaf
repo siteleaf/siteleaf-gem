@@ -113,7 +113,11 @@ def put_theme_assets(site_id)
   else
     puts "=> Could not upload assets.\n"
   end
-  FileUtils.rm(theme) if File.exist?(theme)
+  if is_windows = (RbConfig::CONFIG[ 'host_os' ] =~ /mswin|mingw|cygwin/)
+    FileUtils.rm_rf(theme) if File.exists?(theme)
+  else
+    FileUtils.rm(theme) if File.exist?(theme)
+  end
 end
 
 case ARGV[0]
