@@ -37,9 +37,11 @@ module Siteleaf
     end
      
     def call(env)
+      require 'uri'
+      
       site = Siteleaf::Site.new({:id => self.site_id})
       
-      url = env['PATH_INFO']
+      url = URI.unescape(env['PATH_INFO'])
       path = url.gsub(/\/\z|\A\//, '') #strip beginning and trailing slashes
       
       if !['sitemap.xml','feed.xml'].include?(path) and !File.directory?(path) and File.exist?(path)
@@ -49,10 +51,13 @@ module Siteleaf
         is_asset = /^(?!(sitemap|feed)\.xml)(assets|.*\.)/.match(path)
         
         if is_asset 
-          if asset = site.resolve(url) and asset_url = asset['file']['url']
+          output = site.resolve(url)
+          if output.code == 200
             require 'open-uri'
-            output = open(asset_url)
-            [200, {'Content-Type' => output.content_type}, [output.read]]
+            asset = open(output['file']['url'])
+            [output.code, {'Content-Type' => asset.content_type}, [asset.read]]
+          else
+            [output.code, {'Content-Type' => 'text/html'}, [output.to_s]]
           end
         else
           if template_data = resolve_template(url)
@@ -64,10 +69,10 @@ module Siteleaf
           end
         
           output = site.preview(url, template_data)
-          if output.respond_to?('headers')
-            [200, {'Content-Type' => output.headers[:content_type]}, [output]]
+          if output.code == 200
+            [output.code, {'Content-Type' => output.headers[:content_type]}, [output]]
           else
-            [200, {'Content-Type' => 'text/html'}, [output]]
+            [output.code, {'Content-Type' => 'text/html'}, [output]]
           end
         end
       end
