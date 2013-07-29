@@ -1,7 +1,7 @@
 module Siteleaf
   class Page < Entity
 
-    attr_accessor :title, :body, :slug, :url, :parent_id, :site_id, :published_at, :meta
+    attr_accessor :title, :body, :slug, :url, :parent_id, :site_id, :published_at, :user_id, :meta, :assets
     attr_reader :id, :created_at, :updated_at
     
     def self.all
