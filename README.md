@@ -114,6 +114,7 @@ pages = site.pages
 
 # create new page in site
 page = Siteleaf::Page.create({
+  :site_id  => site.id
   :title    => 'My Page',
   :slug     => 'my-page', # optional
   :body     => 'This is my first page.'
@@ -122,14 +123,22 @@ page = Siteleaf::Page.create({
 # get page by id
 page = Siteleaf::Page.find('519719ddcc85910626000001')
 
-# update page, add metadata, add taxonomy
-page.title = 'New Title'
-page.meta = [ {"key" => "foo", "value" => "bar"} ]
-post.taxonomy = [ {"key" => "Tags", "values" => ["One","Two","Three"]} ]
-page.save
+# create new post in page
+post = Siteleaf::Post.create({
+  :page_id  => page.id
+  :title    => 'My Post',
+  :slug     => 'my-post', # optional
+  :body     => 'This is my first post.'
+})
 
-# delete page
-page.delete
+# update page, add metadata, add taxonomy
+post.title = 'New Title'
+post.meta = [ {"key" => "foo", "value" => "bar"} ]
+post.taxonomy = [ {"key" => "Tags", "values" => ["One","Two","Three"]} ]
+post.save
+
+# delete post
+post.delete
 
 # delete page by id
 Siteleaf::Page.delete('519719ddcc85910626000001')
