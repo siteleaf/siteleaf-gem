@@ -50,7 +50,7 @@ module Siteleaf
         template_data = nil
         is_asset = /^(?!(sitemap|feed)\.xml)(assets|.*\.)/.match(path)
         
-        if is_asset 
+        if is_asset and !File.exist?("#{path}.liquid")
           output = site.resolve(url)
           if output.code == 200
             require 'open-uri'
@@ -60,7 +60,7 @@ module Siteleaf
             [output.code, {'Content-Type' => 'text/html'}, [output.to_s]]
           end
         else
-          if template_data = resolve_template(url)
+          if (File.exist?("#{path}.liquid") and template_data = File.read("#{path}.liquid")) or (template_data = resolve_template(url))
             # compile liquid includes into a single page
             include_tags = /\{\%\s+include\s+['"]([A-Za-z0-9_\-\/]+)['"]\s+\%\}/
             while include_tags.match(template_data)
@@ -69,10 +69,11 @@ module Siteleaf
           end
         
           output = site.preview(url, template_data)
-          if output.code == 200
-            [output.code, {'Content-Type' => output.headers[:content_type]}, [output]]
+          if output.code == 200 && output.headers[:content_type]
+            puts output.class
+            [output.code, {'Content-Type' => output.headers[:content_type]}, [output.to_s]]
           else
-            [output.code, {'Content-Type' => 'text/html'}, [output]]
+            [output.code, {'Content-Type' => 'text/html'}, [output.to_s]]
           end
         end
       end
