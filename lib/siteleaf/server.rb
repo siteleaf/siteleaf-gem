@@ -69,9 +69,8 @@ module Siteleaf
           end
         
           output = site.preview(url, template_data)
-          if output.code == 200 && output.headers[:content_type]
-            puts output.class
-            [output.code, {'Content-Type' => output.headers[:content_type]}, [output.to_s]]
+          if output.code == 200 && output.headers["content-type"]
+            [output.code, {'Content-Type' => output.headers["content-type"]}, [output.to_s]]
           else
             [output.code, {'Content-Type' => 'text/html'}, [output.to_s]]
           end

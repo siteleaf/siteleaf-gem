@@ -19,7 +19,7 @@ module Siteleaf
     end
     
     def preview(url = '/', template = nil)
-      Client.post "sites/#{self.id}/preview.html", {"url" => url, "template" => template}
+      Client.post "sites/#{self.id}/preview", {"url" => url, "template" => template}
     end
     
   end
