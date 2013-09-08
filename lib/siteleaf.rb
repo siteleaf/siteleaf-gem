@@ -3,11 +3,13 @@ $LOAD_PATH.unshift(libdir) unless $LOAD_PATH.include?(libdir)
 
 require 'siteleaf/version'
 require 'siteleaf/client'
-require 'siteleaf/server'
 require 'siteleaf/entity'
-require 'siteleaf/site'
+require 'siteleaf/asset'
 require 'siteleaf/page'
 require 'siteleaf/post'
+require 'siteleaf/server'
+require 'siteleaf/site'
+require 'siteleaf/theme'
 require 'siteleaf/user'
 require 'rbconfig'
 

@@ -4,22 +4,17 @@ module Siteleaf
     attr_accessor :title, :body, :slug, :url, :parent_id, :site_id, :published_at, :user_id, :meta, :assets
     attr_reader :id, :created_at, :updated_at
     
-    def self.all
-      result = Client.get "#{self.endpoint}"
-      result.map { |r| self.new(r) } if result
-    end
-    
-    def self.find(id)
-      result = Client.get "#{self.endpoint}/#{id}"
-      self.new(result) if result
-    end
-    
     def create_endpoint
       "sites/#{self.site_id}/pages"
     end
     
     def site
       Site.find(self.site_id) if self.site_id
+    end
+    
+    def assets
+      result = Client.get "pages/#{self.id}/assets"
+      result.map { |r| Asset.new(r) } if result
     end
     
     def posts
