@@ -105,9 +105,13 @@ def put_theme_assets(site_id)
   theme = Siteleaf::Theme.find_by_site_id(site_id)
   assets = theme.assets
   updated_count = 0
+  ignore_paths = ['config.ru', '.*']
+  ignore_paths += File.read('.siteleafignore').split(/\r?\n/) if File.exists?('.siteleafignore')
+  
+  # upload files
   paths = Dir.glob("**/*")
   paths.each do |path|
-    if !['config.ru'].include?(path) && !path.start_with?('.') && !File.directory?(path)
+    if !File.directory?(path) && !ignore_paths.any?{|i| File.fnmatch?(i, path, File::FNM_CASEFOLD) || File.fnmatch?(i, File.basename(path), File::FNM_CASEFOLD) }
       asset = assets.find{|a| a.filename == path }
       if asset.nil? || (asset && asset.checksum != Digest::MD5.hexdigest(File.read(path)))
         print "Uploading #{path}..."
@@ -122,6 +126,8 @@ def put_theme_assets(site_id)
       end
     end
   end
+  
+  # check for old files
   missing_assets = []
   assets.each do |asset| 
     missing_assets << asset if !paths.include?(asset.filename)
