@@ -5,7 +5,6 @@ require 'fileutils'
 require 'open-uri'
 require 'digest/md5'
 require 'securerandom'
-require 'zip'
 
 def help
   %Q(

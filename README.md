@@ -116,7 +116,6 @@ pages = site.pages
 page = Siteleaf::Page.create({
   :site_id  => site.id
   :title    => 'My Page',
-  :slug     => 'my-page', # optional
   :body     => 'This is my first page.'
 })
 
@@ -127,7 +126,6 @@ page = Siteleaf::Page.find('519719ddcc85910626000001')
 post = Siteleaf::Post.create({
   :page_id  => page.id
   :title    => 'My Post',
-  :slug     => 'my-post', # optional
   :body     => 'This is my first post.'
 })
 
