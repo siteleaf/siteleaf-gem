@@ -141,7 +141,7 @@ def put_theme_assets(site_id)
     print '(y/n)? '
     if $stdin.gets.chomp == 'y'
       missing_assets.each do |asset|
-        print "Deleteing #{asset.filename}..."
+        print "Deleting #{asset.filename}..."
         asset.delete
         print "complete.\n"
       end
