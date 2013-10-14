@@ -6,6 +6,7 @@ require 'siteleaf/version'
 Gem::Specification.new do |gem|
   gem.name          = "siteleaf"
   gem.version       = Siteleaf::VERSION
+  gem.license       = "MIT"
   gem.authors       = ["Siteleaf"]
   gem.email         = ["api@siteleaf.com"]
   gem.description   = %q{A Ruby interface and command line utility for the Siteleaf API.}
