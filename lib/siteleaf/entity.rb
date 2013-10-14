@@ -1,5 +1,7 @@
 module Siteleaf
   class Entity
+  
+    attr_reader :error
 
     def initialize(attributes = {})
       self.attributes = attributes
