@@ -49,7 +49,7 @@ def auth(re_auth = false)
       end
       puts "=> Gem authorized." if re_auth
     else
-      puts "Could not authorize, check your e-mail or password."
+      puts auth['error'] || "Could not authorize, check your e-mail or password."
     end
   end
 end

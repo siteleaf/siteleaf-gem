@@ -9,7 +9,7 @@ module Siteleaf
         })
         return request.parsed_response # parse JSON
       rescue => e
-        return e.inspect # error
+        return 'error' => e.message # error
       end
     end
 
@@ -43,7 +43,7 @@ module Siteleaf
           return request # raw
         end
       rescue => e
-        return e.inspect # error
+        return 'error' => e.message # error
       end
     end
   end
