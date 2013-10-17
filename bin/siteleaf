@@ -48,8 +48,10 @@ def auth(re_auth = false)
         Marshal.dump({:api_key => auth['api_key'], :api_secret => auth['api_secret']}, file)
       end
       puts "=> Gem authorized." if re_auth
+      return true
     else
       puts auth['error'] || "Could not authorize, check your e-mail or password."
+      return false
     end
   end
 end
@@ -165,30 +167,33 @@ when 's', 'server'
 when 'auth'
   auth true
 when 'c', 'config', 'setup'
-  auth
-  if site = Siteleaf::Site.find_by_domain(ARGV[1])
-    config site
-  else
-    puts "No site found for `#{ARGV[1]}`, run `siteleaf new #{ARGV[1]}` to create it.\n"
+  if auth
+    if site = Siteleaf::Site.find_by_domain(ARGV[1])
+      config site
+    else
+      puts "No site found for `#{ARGV[1]}`, run `siteleaf new #{ARGV[1]}` to create it.\n"
+    end
   end
 when 'n', 'new'
-  auth
-  if (site = Siteleaf::Site.create(:title => ARGV[1], :domain => ARGV[1])) && (!site.error)
-    dir = ARGV.size >= 3 ? ARGV[2] : ARGV[1]
-    Dir.mkdir(dir) unless File.directory?(dir)
-    Dir.chdir(dir)
-    config site
-  else
-    puts "Could not create site `#{ARGV[1]}`.\n"
+  if auth
+    if (site = Siteleaf::Site.create(:title => ARGV[1], :domain => ARGV[1])) && (!site.error)
+      dir = ARGV.size >= 3 ? ARGV[2] : ARGV[1]
+      Dir.mkdir(dir) unless File.directory?(dir)
+      Dir.chdir(dir)
+      config site
+    else
+      puts "Could not create site `#{ARGV[1]}`.\n"
+    end
   end
 when 'pull'
   case ARGV[1]
   when 'theme'
-    auth
-    if site_id = get_site_id
-      get_theme_assets(site_id)
-    else
-      puts "Site not configured, run `siteleaf config yoursite.com`.\n"
+    if auth
+      if site_id = get_site_id
+        get_theme_assets(site_id)
+      else
+        puts "Site not configured, run `siteleaf config yoursite.com`.\n"
+      end
     end
   else
     puts "`#{ARGV[0]}` command not found.\n"
@@ -196,11 +201,12 @@ when 'pull'
 when 'push'
   case ARGV[1]
   when 'theme'
-    auth
-    if site_id = get_site_id
-      put_theme_assets(site_id)
-    else
-      puts "Site not configured, run `siteleaf config yoursite.com`.\n"
+    if auth
+      if site_id = get_site_id
+        put_theme_assets(site_id)
+      else
+        puts "Site not configured, run `siteleaf config yoursite.com`.\n"
+      end
     end
   else
     puts "`#{ARGV[0]}` command not found.\n"
