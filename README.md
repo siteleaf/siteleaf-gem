@@ -124,9 +124,9 @@ page = Siteleaf::Page.find('519719ddcc85910626000001')
 
 # create new post in page
 post = Siteleaf::Post.create({
-  :page_id  => page.id
-  :title    => 'My Post',
-  :body     => 'This is my first post.'
+  :parent_id => page.id
+  :title     => 'My Post',
+  :body      => 'This is my first post.'
 })
 
 # update page, add metadata, add taxonomy
