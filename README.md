@@ -135,6 +135,15 @@ post.meta = [ {"key" => "foo", "value" => "bar"} ]
 post.taxonomy = [ {"key" => "Tags", "values" => ["One","Two","Three"]} ]
 post.save
 
+# upload asset to post (use site_id, page_id, or theme_id to upload to Site, Page, or Theme instead)
+Siteleaf::Asset.create({
+  :post_id => post.id, 
+  "file" => File.open("~/image.png"), 
+  "filename" => "image.png"
+})
+
+require "open-uri"
+
 # delete post
 post.delete
 
