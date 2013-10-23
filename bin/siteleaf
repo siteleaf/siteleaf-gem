@@ -167,7 +167,7 @@ when 's', 'server'
 when 'auth'
   auth true
 when 'c', 'config', 'setup'
-  if auth
+  if auth != false
     if site = Siteleaf::Site.find_by_domain(ARGV[1])
       config site
     else
@@ -175,7 +175,7 @@ when 'c', 'config', 'setup'
     end
   end
 when 'n', 'new'
-  if auth
+  if auth != false
     if (site = Siteleaf::Site.create(:title => ARGV[1], :domain => ARGV[1])) && (!site.error)
       dir = ARGV.size >= 3 ? ARGV[2] : ARGV[1]
       Dir.mkdir(dir) unless File.directory?(dir)
@@ -188,7 +188,7 @@ when 'n', 'new'
 when 'pull'
   case ARGV[1]
   when 'theme'
-    if auth
+    if auth != false
       if site_id = get_site_id
         get_theme_assets(site_id)
       else
@@ -201,7 +201,7 @@ when 'pull'
 when 'push'
   case ARGV[1]
   when 'theme'
-    if auth
+    if auth != false
       if site_id = get_site_id
         put_theme_assets(site_id)
       else
