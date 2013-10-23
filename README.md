@@ -142,8 +142,6 @@ asset = Siteleaf::Asset.create({
   :filename => "image.png"
 })
 
-require "open-uri"
-
 # delete post
 post.delete
 
