@@ -137,9 +137,9 @@ post.save
 
 # upload asset to post (use site_id, page_id, or theme_id to upload to Site, Page, or Theme instead)
 asset = Siteleaf::Asset.create({
-  :post_id => post.id, 
-  "file" => File.open("~/image.png"), 
-  "filename" => "image.png"
+  :post_id  => post.id, 
+  :file     => File.open("~/image.png"), 
+  :filename => "image.png"
 })
 
 require "open-uri"
