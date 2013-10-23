@@ -124,9 +124,9 @@ page = Siteleaf::Page.find('519719ddcc85910626000001')
 
 # create new post in page
 post = Siteleaf::Post.create({
-  :page_id  => page.id
-  :title    => 'My Post',
-  :body     => 'This is my first post.'
+  :parent_id => page.id
+  :title     => 'My Post',
+  :body      => 'This is my first post.'
 })
 
 # update page, add metadata, add taxonomy
@@ -134,6 +134,13 @@ post.title = 'New Title'
 post.meta = [ {"key" => "foo", "value" => "bar"} ]
 post.taxonomy = [ {"key" => "Tags", "values" => ["One","Two","Three"]} ]
 post.save
+
+# upload asset to post (use site_id, page_id, or theme_id to upload to Site, Page, or Theme instead)
+asset = Siteleaf::Asset.create({
+  :post_id  => post.id, 
+  :file     => File.open("~/image.png"), 
+  :filename => "image.png"
+})
 
 # delete post
 post.delete
