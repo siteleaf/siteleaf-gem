@@ -55,9 +55,9 @@ module Siteleaf
           if output.code == 200
             require 'open-uri'
             asset = open(output['file']['url'])
-            [output.code, {'Content-Type' => asset.content_type}, [asset.read]]
+            [output.code, {'Content-Type' => asset.content_type, 'Content-Length' => asset.size.to_s}, [asset.read]]
           else
-            [output.code, {'Content-Type' => 'text/html'}, [output.to_s]]
+            [output.code, {'Content-Type' => 'text/html', 'Content-Length' => output.size.to_s}, [output.to_s]]
           end
         else
           if (File.exist?("#{path}.liquid") and template_data = File.read("#{path}.liquid")) or (template_data = resolve_template(url))
@@ -70,9 +70,9 @@ module Siteleaf
         
           output = site.preview(url, template_data)
           if output.code == 200 && output.headers["content-type"]
-            [output.code, {'Content-Type' => output.headers["content-type"]}, [output.to_s]]
+            [output.code, {'Content-Type' => output.headers["content-type"], 'Content-Length' => output.size.to_s}, [output.to_s]]
           else
-            [output.code, {'Content-Type' => 'text/html'}, [output.to_s]]
+            [output.code, {'Content-Type' => 'text/html', 'Content-Length' => output.size.to_s}, [output.to_s]]
           end
         end
       end
