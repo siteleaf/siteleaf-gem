@@ -21,7 +21,7 @@ Testing sites locally
 
 The Siteleaf gem allows you to test and develop your sites locally. If using [Pow](http://pow.cx) or [Anvil](http://anvilformac.com), your local website will be automatically set up and can be accessed at `http://yoursite.dev`.
 
-**(Optional) Install Pow for extra goodness:**
+**(Optional, Mac-only) Install Pow for extra goodness:**
 
     curl get.pow.cx | sh
 
