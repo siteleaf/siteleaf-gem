@@ -62,6 +62,10 @@ To download your theme (or the default theme for new sites) from Siteleaf, run t
 To upload your theme to Siteleaf, run the following command:
 
     siteleaf push theme
+    
+To switch Siteleaf users or re-authenticate:
+
+    siteleaf auth
 
 
 Using this gem in your application
