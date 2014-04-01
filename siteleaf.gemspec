@@ -16,7 +16,7 @@ Gem::Specification.new do |gem|
   gem.required_ruby_version = '>= 1.8'
   
   gem.add_dependency 'httparty', '<= 0.11'
-  gem.add_dependency 'httmultiparty'
+  gem.add_dependency 'httmultiparty', '<= 0.3.12'
   gem.add_dependency 'rack'
 
   gem.files         = `git ls-files`.split($/)
