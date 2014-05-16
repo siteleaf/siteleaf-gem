@@ -108,7 +108,7 @@ def put_theme_assets(site_id)
   updated_count = 0
   ignore_paths = ['config.ru', '.*']
   ignore_paths += File.read('.siteleafignore').split(/\r?\n/) if File.exists?('.siteleafignore')
-  
+
   # upload files
   paths = Dir.glob("**/*")
   paths.each do |path|
@@ -127,10 +127,10 @@ def put_theme_assets(site_id)
       end
     end
   end
-  
+
   # check for old files
   missing_assets = []
-  assets.each do |asset| 
+  assets.each do |asset|
     missing_assets << asset if !paths.include?(asset.filename)
   end
   if missing_assets.empty?
@@ -151,6 +151,79 @@ def put_theme_assets(site_id)
     end
   end
 end
+
+
+# Partially lifted from hub
+# https://github.com/github/hub
+
+def browser_launcher
+  browser = ENV['BROWSER'] || (
+    osx? ? 'open' : windows? ? %w[cmd /c start] :
+    %w[xdg-open cygstart x-www-browser firefox opera mozilla netscape].find { |comm| which comm }
+  )
+
+  abort "Please set $BROWSER to a web launcher to use this command." unless browser
+  Array(browser)
+end
+
+def osx?
+  require 'rbconfig'
+  RbConfig::CONFIG['host_os'].to_s.include?('darwin')
+end
+
+def windows?
+  require 'rbconfig'
+  RbConfig::CONFIG['host_os'] =~ /msdos|mswin|djgpp|mingw|windows/
+end
+
+# Cross-platform way of finding an executable in the $PATH.
+#   which('ruby') #=> /usr/bin/ruby
+def which(cmd)
+  exts = ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
+  ENV['PATH'].split(File::PATH_SEPARATOR).each do |path|
+    exts.each { |ext|
+      exe = "#{path}/#{cmd}#{ext}"
+      return exe if File.executable? exe
+    }
+  end
+  return nil
+end
+
+def open_command(args)
+  url_only = args.delete('-u')
+  url = yield
+  executable = url_only ? %w[echo] : browser_launcher
+  executable << url.to_s
+  exec(*executable)
+end
+
+def open(args)
+  require 'uri'
+  args.shift
+  site_id = get_site_id
+  abort "Site not configured, run `siteleaf config yoursite.com`.\n" unless site_id
+
+  open_command(args) do
+    page = args.shift
+
+    path = case page
+    when 'settings'
+      "/sites/#{site_id}/edit"
+    when 'users'
+      "/sites/#{site_id}/users"
+    when 'assets'
+      "/sites/#{site_id}/assets"
+    when 'preview'
+      "https://preview-#{site_id}.siteleaf.com"
+    else
+      "/sites/#{site_id}/pages"
+    end
+
+    uri = URI.parse(path)
+    uri.absolute? ? uri : URI.join('https://manage.siteleaf.com', path)
+  end
+end
+
 
 case ARGV[0]
 when '-v', '--version', 'version'
@@ -211,6 +284,10 @@ when 'push'
   else
     puts "`#{ARGV[0]}` command not found.\n"
   end
+when 'open'
+  open ARGV
+when 'preview'
+  open %w[open preview]
 else
   puts "`#{ARGV[0]}` command not found.\n"
   puts help
