@@ -19,13 +19,18 @@ Commands:
   push theme          Pushes all files in dir as theme to configured site.
   help                Prints this help document
   version             Prints the siteleaf gem version
+  open                Opens Siteleaf admin page in web browser
+  open assets         Opens Siteleaf assets page in web browser
+  open preview        Opens Siteleaf preview page in web browser
+  open settings       Opens Siteleaf settings page in web browser
+  open users          Opens Siteleaf users page in web browser
 
 Options:
   -h, --help          Prints this help document
   -v, --version       Prints the siteleaf gem version
   -p, --port PORT     Binds local server to PORT (default: 9292)
 
-See https://github.com/siteleaf/siteleaf-gem for additional documentation.
+See https://www.siteleaf.com/help for additional documentation.
 )
 end
 
@@ -75,12 +80,13 @@ run Siteleaf::Server.new(:site_id => '#{site.id}')" }
   end
 end
 
-def get_site_id
+def get_site_id(required = true)
   if File.exist?('config.ru')
     if match = /:site_id => '([a-z0-9]{24})'/i.match(File.read('config.ru'))
       return match[1]
     end
   end
+  abort "Site not configured, run `siteleaf config yoursite.com`.\n" if required
 end
 
 def get_theme_assets(site_id)
@@ -200,23 +206,21 @@ end
 def open(args)
   require 'uri'
   args.shift
-  site_id = get_site_id
-  abort "Site not configured, run `siteleaf config yoursite.com`.\n" unless site_id
 
   open_command(args) do
     page = args.shift
 
     path = case page
     when 'settings'
-      "/sites/#{site_id}/edit"
+      "/sites/#{get_site_id}/edit"
     when 'users'
-      "/sites/#{site_id}/users"
+      "/sites/#{get_site_id}/users"
     when 'assets'
-      "/sites/#{site_id}/assets"
+      "/sites/#{get_site_id}/assets"
     when 'preview'
-      "https://preview-#{site_id}.siteleaf.com"
+      "https://preview-#{get_site_id}.siteleaf.com"
     else
-      "/sites/#{site_id}/pages"
+      (site_id = get_site_id(false)) ? "/sites/#{site_id}/pages" : "/"
     end
 
     uri = URI.parse(path)
@@ -264,8 +268,6 @@ when 'pull'
     if auth != false
       if site_id = get_site_id
         get_theme_assets(site_id)
-      else
-        puts "Site not configured, run `siteleaf config yoursite.com`.\n"
       end
     end
   else
@@ -277,8 +279,6 @@ when 'push'
     if auth != false
       if site_id = get_site_id
         put_theme_assets(site_id)
-      else
-        puts "Site not configured, run `siteleaf config yoursite.com`.\n"
       end
     end
   else
