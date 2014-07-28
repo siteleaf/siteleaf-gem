@@ -4,7 +4,6 @@ require 'siteleaf'
 require 'fileutils'
 require 'open-uri'
 require 'digest/md5'
-require 'securerandom'
 
 def help
   %Q(
@@ -91,7 +90,7 @@ def get_theme_assets(site_id)
         # file is up to date
       else
         print "Downloading #{asset.filename}..."
-        file = open("#{asset.file['url']}?#{SecureRandom.hex(16)}", /^1\.8/.match(RUBY_VERSION) ? 'r' : 'r:UTF-8') { |f| f.read }
+        file = open(asset.file['url'], /^1\.8/.match(RUBY_VERSION) ? 'r' : 'r:UTF-8') { |f| f.read }
         FileUtils.mkdir_p(File.dirname(asset.filename))
         File.open(asset.filename, /^1\.8/.match(RUBY_VERSION) ? 'w' : 'w:UTF-8') { |f| f.write(file) }
         updated_count += 1
