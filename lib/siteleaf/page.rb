@@ -24,7 +24,7 @@ module Siteleaf
     
     def pages
       result = Client.get "pages/#{self.id}?include=pages"
-      result["pages"].map { |r| self.new(r) } if result
+      result["pages"].map { |r| Page.new(r) } if result
     end
     
     def page
