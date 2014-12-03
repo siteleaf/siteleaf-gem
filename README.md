@@ -118,7 +118,7 @@ pages = site.pages
 
 # create new page in site
 page = Siteleaf::Page.create({
-  :site_id  => site.id
+  :site_id  => site.id,
   :title    => 'My Page',
   :body     => 'This is my first page.'
 })
@@ -128,7 +128,7 @@ page = Siteleaf::Page.find('519719ddcc85910626000001')
 
 # create new post in page
 post = Siteleaf::Post.create({
-  :parent_id => page.id
+  :parent_id => page.id,
   :title     => 'My Post',
   :body      => 'This is my first post.'
 })
