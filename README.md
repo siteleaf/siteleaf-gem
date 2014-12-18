@@ -89,7 +89,7 @@ Siteleaf.api_key    = 'KEY'
 Siteleaf.api_secret = 'SECRET'
 
 # get authenticated user
-me = Siteleaf::Users.find('me')
+me = Siteleaf::User.find('me')
 
 # get all sites
 sites = Siteleaf::Site.all
