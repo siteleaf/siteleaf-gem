@@ -91,6 +91,19 @@ To replace the entire theme by the one in the current local directory. Not like 
     siteleaf replace theme -n  
 
 
+**Add A single or multiple file to theme:**
+
+Uses for this are endless if we use it just for config.ru file we can create posts and pages just by this command dynamically.
+
+Adding Files to theme it will only replace if the name matches otherwise it'll just add that file.
+
+        siteleaf add theme  
+
+Adding Files to theme it will only replace if the name matches otherwise it'll just add that file without any prompts of deletion i.e. no [y/n] it's a direct y.
+
+        siteleaf add theme  -n
+
+
 Using this gem in your application
 ----------------------------------
 

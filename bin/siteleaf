@@ -23,6 +23,9 @@ Commands:
   replace theme       Replaces the theme on Siteleaf entirely by the one in current local dir.
   replace theme -n    Replaces the theme on Siteleaf entirely by the one in current local dir without any prompts for user.
 
+  add theme           Adding an extra file to theme without changing the original theme but in case of name conflict it will replace.
+  add theme -n        Adding an extra file to theme without changing the original theme but in case of name conflict it will replace without any prompts for user.
+
   help                Prints this help document
   version             Prints the siteleaf gem version
 
@@ -172,6 +175,7 @@ def delete_theme_assets(site_id, prompts)
   ignore_paths = ['config.ru', '.*']
 
   if prompts
+    print 'Sure You want to delete theme?'
     print '(y/n)? '  # Will not print if prompts is false i.e user has entered -n
   else
     prompted_by_user = $stdin.gets.chomp  # Will only ask if prompts is true i.e user has not entered -n
@@ -183,6 +187,45 @@ def delete_theme_assets(site_id, prompts)
     end
     puts "=> #{missing_assets.size} asset(s) deleted.\n"
   end
+end
+
+
+def put_theme_assets(site_id, prompts)
+  theme = Siteleaf::Theme.find_by_site_id(site_id)
+  assets = theme.assets
+  updated_count = 0
+  prompted_by_user = 'n'
+  ignore_paths = ['config.ru', '.*']
+  ignore_paths += File.read('.siteleafignore').split(/\r?\n/) if File.exists?('.siteleafignore')
+
+  # upload files
+  paths = Dir.glob("**/*")
+  paths.each do |path|
+    if !File.directory?(path) && !ignore_paths.any?{|i| File.fnmatch?(i, path, File::FNM_CASEFOLD) || File.fnmatch?(i, File.basename(path), File::FNM_CASEFOLD) }
+      asset = assets.find{|a| a.filename == path }
+      if asset.nil? || (asset && asset.checksum != Digest::MD5.hexdigest(File.read(path)))
+        print "Uploading #{path}..."
+        if prompts
+          print 'Sure You want to replace this file?'
+          print '(y/n)? '  # Will not print if prompts is false i.e user has entered -n
+        else
+          prompted_by_user = $stdin.gets.chomp  # Will only ask if prompts is true i.e user has not entered -n
+        end
+        if !prompts || || prompted_by_user == 'y'
+          asset.delete if asset
+          next
+        end
+        if response = Siteleaf::Asset.create({:site_id => site_id, :theme_id => theme.id, :file => File.new(path), :filename => path})
+          updated_count += 1
+          print "complete.\n"
+        else
+          print "error.\n"
+          break
+        end
+      end
+    end
+  end
+  print "=> #{updated_count} asset(s) uploaded."
 end
 
 
@@ -277,6 +320,23 @@ when 'replace'  # replacement of entire theme with the new one no old files or f
         else
           delete_theme_assets(site_id,true) # true is for prompts on cmd for user
           put_theme_assets(site_id,false)
+        end
+      else
+        puts "Site not configured, run `siteleaf config yoursite.com`.\n"
+      end
+    end
+  else
+    puts "`#{ARGV[0]}` command not found.\n"
+  end
+when 'add'  # add a file to theme
+  case ARGV[1]
+  when 'theme'
+    if auth != false
+      if site_id = get_site_id
+        if ARGV[2] ==  '-n'     # -n is for no prompt notifications
+          add_theme(site_id,false) # false is for no prompts on cmd for user
+        else
+          add_theme(site_id,true) # true is for prompts on cmd for user
         end
       else
         puts "Site not configured, run `siteleaf config yoursite.com`.\n"
