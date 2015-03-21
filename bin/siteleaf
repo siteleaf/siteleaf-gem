@@ -190,7 +190,7 @@ def delete_theme_assets(site_id, prompts)
 end
 
 
-def put_theme_assets(site_id, prompts)
+def add_theme_assets(site_id, prompts)
   theme = Siteleaf::Theme.find_by_site_id(site_id)
   assets = theme.assets
   updated_count = 0
@@ -211,7 +211,7 @@ def put_theme_assets(site_id, prompts)
         else
           prompted_by_user = $stdin.gets.chomp  # Will only ask if prompts is true i.e user has not entered -n
         end
-        if !prompts || || prompted_by_user == 'y'
+        if !prompts || prompted_by_user == 'y'
           asset.delete if asset
           next
         end
