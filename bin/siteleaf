@@ -334,9 +334,9 @@ when 'add'  # add a file to theme
     if auth != false
       if site_id = get_site_id
         if ARGV[2] ==  '-n'     # -n is for no prompt notifications
-          add_theme(site_id,false) # false is for no prompts on cmd for user
+          add_theme_assets(site_id,false) # false is for no prompts on cmd for user
         else
-          add_theme(site_id,true) # true is for prompts on cmd for user
+          add_theme_assets(site_id,true) # true is for prompts on cmd for user
         end
       else
         puts "Site not configured, run `siteleaf config yoursite.com`.\n"
