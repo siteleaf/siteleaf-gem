@@ -152,7 +152,6 @@ def put_theme_assets(site_id, prompts)
     end
     if prompts
       print '(y/n)? '  # Will not print if prompts is false i.e user has entered -n
-    else
       prompted_by_user = $stdin.gets.chomp  # Will only ask if prompts is true i.e user has not entered -n
     end
     if !prompts || prompted_by_user == 'y' # could have shortened but wanted seperate line for $stdin
@@ -177,7 +176,6 @@ def delete_theme_assets(site_id, prompts)
   if prompts
     print 'Sure You want to delete theme?'
     print '(y/n)? '  # Will not print if prompts is false i.e user has entered -n
-  else
     prompted_by_user = $stdin.gets.chomp  # Will only ask if prompts is true i.e user has not entered -n
   end
   if !prompts || prompted_by_user == 'y'
@@ -185,7 +183,7 @@ def delete_theme_assets(site_id, prompts)
       print "Deleting #{asset.filename}..."
       asset.delete
     end
-    puts "=> #{missing_assets.size} asset(s) deleted.\n"
+    puts "=> asset(s) deleted.\n"
   end
 end
 
@@ -206,9 +204,8 @@ def add_theme_assets(site_id, prompts)
       if asset.nil? || (asset && asset.checksum != Digest::MD5.hexdigest(File.read(path)))
         print "Uploading #{path}..."
         if prompts
-          print 'Sure You want to replace this file?'
+          print 'Sure You want to replace this file?\n'
           print '(y/n)? '  # Will not print if prompts is false i.e user has entered -n
-        else
           prompted_by_user = $stdin.gets.chomp  # Will only ask if prompts is true i.e user has not entered -n
         end
         if !prompts || prompted_by_user == 'y'
