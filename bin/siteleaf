@@ -222,7 +222,7 @@ def add_theme_assets(site_id, prompts)
       end
     end
   end
-  print "=> #{updated_count} asset(s) uploaded."
+  print "=> #{updated_count} asset(s) uploaded.\n"
 end
 
 
