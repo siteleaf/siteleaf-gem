@@ -14,8 +14,18 @@ Commands:
   s, server           Starts a local server.
   c, config DOMAIN    Configure an existing directory
   n, new DOMAIN       Creates new site on siteleaf.net
-  pull theme          Pulls theme files for configured site from Siteleaf
+  pull theme          Pulls theme files for configured site from Siteleaf.
   push theme          Pushes all files in dir as theme to configured site.
+
+  push theme -n       Pushes all files in dir as theme to configured site without any prompts for user.
+  delete theme        Deletes all files from Siteleaf (careful usage necessary).
+  delete theme -n     Deletes all files from Siteleaf (careful usage necessary) without any prompts for user.
+  replace theme       Replaces the theme on Siteleaf entirely by the one in current local dir.
+  replace theme -n    Replaces the theme on Siteleaf entirely by the one in current local dir without any prompts for user.
+
+  add theme           Adding an extra file to theme without changing the original theme but in case of name conflict it will replace.
+  add theme -n        Adding an extra file to theme without changing the original theme but in case of name conflict it will replace without any prompts for user.
+
   help                Prints this help document
   version             Prints the siteleaf gem version
 
@@ -101,13 +111,14 @@ def get_theme_assets(site_id)
   end
 end
 
-def put_theme_assets(site_id)
+def put_theme_assets(site_id, prompts)
   theme = Siteleaf::Theme.find_by_site_id(site_id)
   assets = theme.assets
   updated_count = 0
+  prompted_by_user = 'n'
   ignore_paths = ['config.ru', '.*']
   ignore_paths += File.read('.siteleafignore').split(/\r?\n/) if File.exists?('.siteleafignore')
-  
+
   # upload files
   paths = Dir.glob("**/*")
   paths.each do |path|
@@ -126,10 +137,10 @@ def put_theme_assets(site_id)
       end
     end
   end
-  
+
   # check for old files
   missing_assets = []
-  assets.each do |asset| 
+  assets.each do |asset|
     missing_assets << asset if !paths.include?(asset.filename)
   end
   if missing_assets.empty?
@@ -139,8 +150,11 @@ def put_theme_assets(site_id)
     missing_assets.each do |asset|
       puts asset.filename
     end
-    print '(y/n)? '
-    if $stdin.gets.chomp == 'y'
+    if prompts
+      print '(y/n)? '  # Will not print if prompts is false i.e user has entered -n
+      prompted_by_user = $stdin.gets.chomp  # Will only ask if prompts is true i.e user has not entered -n
+    end
+    if !prompts || prompted_by_user == 'y' # could have shortened but wanted seperate line for $stdin
       missing_assets.each do |asset|
         print "Deleting #{asset.filename}..."
         asset.delete
@@ -150,6 +164,67 @@ def put_theme_assets(site_id)
     end
   end
 end
+
+
+def delete_theme_assets(site_id, prompts)
+  theme = Siteleaf::Theme.find_by_site_id(site_id)
+  assets = theme.assets
+  updated_count = 0
+  prompted_by_user = 'n'
+  ignore_paths = ['config.ru', '.*']
+
+  if prompts
+    print 'Sure You want to delete theme?'
+    print '(y/n)? '  # Will not print if prompts is false i.e user has entered -n
+    prompted_by_user = $stdin.gets.chomp  # Will only ask if prompts is true i.e user has not entered -n
+  end
+  if !prompts || prompted_by_user == 'y'
+    assets.each do |asset|
+      print "Deleting #{asset.filename}..."
+      asset.delete
+    end
+    puts "=> asset(s) deleted.\n"
+  end
+end
+
+
+def add_theme_assets(site_id, prompts)
+  theme = Siteleaf::Theme.find_by_site_id(site_id)
+  assets = theme.assets
+  updated_count = 0
+  prompted_by_user = 'n'
+  ignore_paths = ['config.ru', '.*']
+  ignore_paths += File.read('.siteleafignore').split(/\r?\n/) if File.exists?('.siteleafignore')
+
+  # upload files
+  paths = Dir.glob("**/*")
+  paths.each do |path|
+    if !File.directory?(path) && !ignore_paths.any?{|i| File.fnmatch?(i, path, File::FNM_CASEFOLD) || File.fnmatch?(i, File.basename(path), File::FNM_CASEFOLD) }
+      asset = assets.find{|a| a.filename == path }
+      if asset.nil? || (asset && asset.checksum != Digest::MD5.hexdigest(File.read(path)))
+        print "Uploading #{path}..."
+        if prompts
+          print 'Sure You want to replace this file?\n'
+          print '(y/n)? '  # Will not print if prompts is false i.e user has entered -n
+          prompted_by_user = $stdin.gets.chomp  # Will only ask if prompts is true i.e user has not entered -n
+        end
+        if !prompts || prompted_by_user == 'y'
+          asset.delete if asset
+          next
+        end
+        if response = Siteleaf::Asset.create({:site_id => site_id, :theme_id => theme.id, :file => File.new(path), :filename => path})
+          updated_count += 1
+          print "complete.\n"
+        else
+          print "error.\n"
+          break
+        end
+      end
+    end
+  end
+  print "=> #{updated_count} asset(s) uploaded.\n"
+end
+
 
 case ARGV[0]
 when '-v', '--version', 'version'
@@ -202,7 +277,64 @@ when 'push'
   when 'theme'
     if auth != false
       if site_id = get_site_id
-        put_theme_assets(site_id)
+        if ARGV[2] ==  '-n'     # -n is for no prompt notifications
+          put_theme_assets(site_id,false) # false is for no prompts on cmd for user
+        else
+          put_theme_assets(site_id,true) # true is for prompts on cmd for user
+        end
+      else
+        puts "Site not configured, run `siteleaf config yoursite.com`.\n"
+      end
+    end
+  else
+    puts "`#{ARGV[0]}` command not found.\n"
+  end
+when 'delete'   # deletion of entire theme
+  case ARGV[1]
+  when 'theme'
+    if auth != false
+      if site_id = get_site_id
+        if ARGV[2] ==  '-n'     # -n is for no prompt notifications
+          delete_theme_assets(site_id,false) # false is for no prompts on cmd for user
+        else
+          delete_theme_assets(site_id,true) # true is for prompts on cmd for user
+        end
+      else
+        puts "Site not configured, run `siteleaf config yoursite.com`.\n"
+      end
+    end
+  else
+    puts "`#{ARGV[0]}` command not found.\n"
+  end
+when 'replace'  # replacement of entire theme with the new one no old files or folders will persist like they do in push
+  case ARGV[1]
+  when 'theme'
+    if auth != false
+      if site_id = get_site_id
+        if ARGV[2] ==  '-n'     # -n is for no prompt notifications
+          delete_theme_assets(site_id,false) # false is for no prompts on cmd for user
+          put_theme_assets(site_id,false)
+        else
+          delete_theme_assets(site_id,true) # true is for prompts on cmd for user
+          put_theme_assets(site_id,false)
+        end
+      else
+        puts "Site not configured, run `siteleaf config yoursite.com`.\n"
+      end
+    end
+  else
+    puts "`#{ARGV[0]}` command not found.\n"
+  end
+when 'add'  # add a file to theme
+  case ARGV[1]
+  when 'theme'
+    if auth != false
+      if site_id = get_site_id
+        if ARGV[2] ==  '-n'     # -n is for no prompt notifications
+          add_theme_assets(site_id,false) # false is for no prompts on cmd for user
+        else
+          add_theme_assets(site_id,true) # true is for prompts on cmd for user
+        end
       else
         puts "Site not configured, run `siteleaf config yoursite.com`.\n"
       end

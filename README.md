@@ -42,7 +42,7 @@ Your site should now be accessible at `http://yoursite.dev`.
 **If you don't want to install Pow, local sites can also be manually run:**
 
     siteleaf server
-  
+
 In this case, your local site can be accessed at `http://localhost:9292`.
 
 **Lastly...**
@@ -62,15 +62,51 @@ To download your theme (or the default theme for new sites) from Siteleaf, run t
 To upload your theme to Siteleaf, run the following command:
 
     siteleaf push theme
-    
+
 To switch Siteleaf users or re-authenticate:
 
     siteleaf auth
 
 
+**Added New Commands:**
+
+To Push the entire theme without any prompts of deletion i.e. no [y/n] from user it's a direct y .
+
+    siteleaf push theme -n  
+
+To delete the entire theme.
+
+    siteleaf delete theme
+
+To delete the entire theme without any prompts of deletion i.e. no [y/n] it's a direct y.
+
+    siteleaf delete theme -n
+
+To replace the entire theme by the one in the current local directory. Not like push where old revision is checked instead an entire cleanout and the new theme is loaded.
+
+    siteleaf replace theme
+
+To replace the entire theme by the one in the current local directory. Not like push where old revision is checked instead an entire cleanout and the new theme is loaded without any prompts of deletion i.e. no [y/n] it's a direct y.
+
+    siteleaf replace theme -n  
+
+
+**Add A single or multiple file to theme:**
+
+Uses for this are endless if we use it just for config.ru file we can create posts and pages just by this command dynamically.
+
+Adding Files to theme it will only replace if the name matches otherwise it'll just add that file.
+
+        siteleaf add theme  
+
+Adding Files to theme it will only replace if the name matches otherwise it'll just add that file without any prompts of deletion i.e. no [y/n] it's a direct y.
+
+        siteleaf add theme  -n
+
+
 Using this gem in your application
 ----------------------------------
-    
+
 To use this gem in your application, add the following to your Gemfile:
 
     gem 'siteleaf', :git => 'git://github.com/siteleaf/siteleaf-gem.git'
@@ -141,8 +177,8 @@ post.save
 
 # upload asset to post (use site_id, page_id, or theme_id to upload to Site, Page, or Theme instead)
 asset = Siteleaf::Asset.create({
-  :post_id  => post.id, 
-  :file     => File.open("~/image.png"), 
+  :post_id  => post.id,
+  :file     => File.open("~/image.png"),
   :filename => "image.png"
 })
 
