@@ -107,7 +107,7 @@ def put_theme_assets(site_id)
   updated_count = 0
   ignore_paths = ['config.ru', '.*']
   ignore_paths += File.read('.siteleafignore').split(/\r?\n/) if File.exists?('.siteleafignore')
-  
+
   # upload files
   paths = Dir.glob("**/*")
   paths.each do |path|
@@ -126,10 +126,10 @@ def put_theme_assets(site_id)
       end
     end
   end
-  
+
   # check for old files
   missing_assets = []
-  assets.each do |asset| 
+  assets.each do |asset|
     missing_assets << asset if !paths.include?(asset.filename)
   end
   if missing_assets.empty?
@@ -147,6 +147,44 @@ def put_theme_assets(site_id)
         print "complete.\n"
       end
       puts "=> #{missing_assets.size} asset(s) deleted.\n"
+    end
+  end
+end
+
+def export_site_content(site_id)
+  FileUtils::mkdir_p 'export/_posts'
+
+  site = Siteleaf::Site.find(site_id)
+
+  pages = site.pages
+
+  pages.each do |page|
+    if page.posts.count > 0
+      print "Exporting #{page.title} posts..."
+
+      page.posts.each do |post|
+        if post.visibility == "visible"
+          title = post.title
+          date = Time.parse(post.published_at)
+          category = post.slug
+          body = post.body
+          slug = post.slug
+
+          file = open("export/_posts/#{date.strftime('%Y-%m-%d')}-#{slug}.md", /^1\.8/.match(RUBY_VERSION) ? 'w' : 'w:UTF-8') do |f|
+            f.puts "---\n"
+            f.puts "title: \"#{title}\"\n"
+            f.puts "date:  #{date.strftime('%Y-%m-%d %H-%M-%S')}\n"
+            f.puts "categories: #{category}"
+            f.puts "---\n\n"
+
+            f.puts post.body
+          end
+        end
+      end
+
+      print "complete.\n"
+    else
+      print "Export #{page.title} posts...skipping.\n"
     end
   end
 end
@@ -206,6 +244,19 @@ when 'push'
       else
         puts "Site not configured, run `siteleaf config yoursite.com`.\n"
       end
+    end
+  else
+    puts "`#{ARGV[0]}` command not found.\n"
+  end
+when 'export'
+  case ARGV[1]
+  when 'content'
+    if auth != false
+      if site_id = get_site_id
+        export_site_content(site_id)
+      end
+    else
+      puts "Site not configured, run `siteleaf config yoursite.com`.\n"
     end
   else
     puts "`#{ARGV[0]}` command not found.\n"
