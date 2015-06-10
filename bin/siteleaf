@@ -4,7 +4,6 @@ require 'siteleaf'
 require 'fileutils'
 require 'open-uri'
 require 'digest/md5'
-require 'yaml'
 
 def help
   %Q(
@@ -170,9 +169,8 @@ def get_site_content(site_id)
 
       open(page_path, /^1\.8/.match(RUBY_VERSION) ? 'w' : 'w:UTF-8') do |f|
         f.puts "---\n"
-        f.puts "title:     \"#{page.title}\""
+        f.puts "title:     #{page.title}"
         f.puts "permalink: #{page.url}"
-        f.puts "id:        #{page.id}"
         f.puts "---\n\n"
 
         f.puts page.body
@@ -194,7 +192,6 @@ def get_site_content(site_id)
             f.puts "title: \"#{post.title}\"\n"
             f.puts "date:  #{post_date.strftime('%Y-%m-%d %H-%M-%S')}\n"
             f.puts "categories: #{page.slug}"
-            f.puts "id:    #{post.id}"
             f.puts "---\n\n"
 
             f.puts post.body
@@ -207,70 +204,6 @@ def get_site_content(site_id)
       print "Downloading #{page.title} posts...skipping.\n"
     end
   end
-end
-
-def put_site_content(site_id)
-  site = Siteleaf::Site.find(site_id)
-
-  # Do pages first
-  pages = Dir.glob("source/*.md")
-
-  pages.each do |file|
-    content = File.read(file)
-
-    contentparts = /---(.*)---(.*)/m.match(content)
-    frontmatter = YAML.load(contentparts[1])
-
-    # There is a page ID in the frontmatter
-    if frontmatter.has_key?('id')
-      page = Siteleaf::Page.find(frontmatter['id'])
-
-      # No page with that ID, have to create one
-      if page.error != nil
-        page = Siteleaf::Page.new({
-          :site_id => site_id,
-          :title => frontmatter['title'],
-          :body => contentparts[2]
-        })
-
-        page.save
-
-        # Replace the ID in the file, since it's incorrect
-        content = content.gsub(/#{frontmatter['id']}/, page.id)
-
-        File.open(file, "w") { |f| f.write content }
-
-        puts "#{page.title} created"
-
-      # There's a page with that ID, edit it now
-      else
-        page.title = frontmatter['title']
-        page.body = contentparts[2]
-        page.save
-
-        puts "#{page.title} edited"
-      end
-
-    # No page ID, we're going to have to make a new page
-    else
-      page = Siteleaf::Page.new({
-        :site_id => site_id,
-        :title => frontmatter['title'],
-        :body => contentparts[2]
-      })
-
-      page.save
-
-      new_content = "---\n" + contentparts[1].lstrip + "id: #{page.id}\n" + "---\n"
-      new_content += "\n#{contentparts[2].lstrip}"
-
-      File.open(file, "w") { |f| f.write new_content }
-
-      puts "#{page.title} created"
-    end
-  end
-
-  # Next do posts
 end
 
 def get_site_uploads(site_id)
@@ -367,14 +300,6 @@ when 'push'
     if auth != false
       if site_id = get_site_id
         put_theme_assets(site_id)
-      else
-        puts "Site not configured, run `siteleaf config yoursite.com`.\n"
-      end
-    end
-  when 'content'
-    if auth != false
-      if site_id = get_site_id
-        put_site_content(site_id)
       else
         puts "Site not configured, run `siteleaf config yoursite.com`.\n"
       end
