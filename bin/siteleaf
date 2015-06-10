@@ -160,11 +160,13 @@ def build_jekyll_config(site_id)
   open("export/_config.yml", /^1\.8/.match(RUBY_VERSION) ? 'w' : 'w:UTF-8') do |f|
     f.puts "title: #{site.title}\n"
 
-    f.puts "meta: \n"
-    site.attributes['meta'].each do |meta|
-      f.puts "  #{meta['key']}: #{meta['value']}\n"
+    unless site.attributes['meta'].empty?
+      f.puts "meta: \n"
+      site.attributes['meta'].each do |meta|
+        f.puts "  #{meta['key']}: #{meta['value']}\n"
+      end
+      f.puts "\n"
     end
-    f.puts "\n"
 
     # f.puts "source: ./_source\n"
     f.puts "safe: true\n\n"
@@ -186,7 +188,7 @@ def build_jekyll_config(site_id)
 end
 
 def get_site_content(site_id)
-  FileUtils::mkdir_p 'export//_posts'
+  FileUtils::mkdir_p 'export/_posts'
 
   site = Siteleaf::Site.find(site_id)
 
@@ -198,12 +200,20 @@ def get_site_content(site_id)
     if page.body == ""
       print "skipping.\n"
     else
-      page_path = "export//#{page.slug}.md"
+      page_path = "export/#{page.slug}.md"
 
       open(page_path, /^1\.8/.match(RUBY_VERSION) ? 'w' : 'w:UTF-8') do |f|
         f.puts "---\n"
         f.puts "title:     #{page.title}"
         f.puts "permalink: #{page.url}"
+
+        unless page.attributes['meta'].empty?
+          f.puts "meta:\n"
+          page.attributes['meta'].each do |meta|
+            f.puts "  #{meta['key']}: #{meta['value']}"
+          end
+        end
+
         f.puts "---\n\n"
 
         body = page.body
@@ -226,13 +236,21 @@ def get_site_content(site_id)
       page.posts.each do |post|
         if post.visibility == "visible"
           post_date = Time.parse(post.published_at)
-          post_path = "export//_posts/#{post_date.strftime('%Y-%m-%d')}-#{post.slug}.md"
+          post_path = "export/_posts/#{post_date.strftime('%Y-%m-%d')}-#{post.slug}.md"
 
           open(post_path, /^1\.8/.match(RUBY_VERSION) ? 'w' : 'w:UTF-8') do |f|
             f.puts "---\n"
             f.puts "title: \"#{post.title}\"\n"
             f.puts "date:  #{post_date.strftime('%Y-%m-%d %H:%M:%S')}\n"
             f.puts "categories: #{page.slug}"
+
+            unless post.attributes['meta'].empty?
+              f.puts "meta:\n"
+              post.attributes['meta'].each do |meta|
+                f.puts "  #{meta['key']}: #{meta['value']}"
+              end
+            end
+
             f.puts "---\n\n"
 
             body = post.body
@@ -256,13 +274,13 @@ def get_site_content(site_id)
 end
 
 def get_site_uploads(site_id)
-  FileUtils::mkdir_p 'export//uploads'
+  FileUtils::mkdir_p 'export/uploads'
 
   site = Siteleaf::Site.find(site_id)
 
   if assets = site.assets
     assets.each do |asset|
-      asset_path = "export//uploads/#{asset.filename}"
+      asset_path = "export/uploads/#{asset.filename}"
       arr_path = asset_path.split('/')
 
       # Make subdirectories if needed
