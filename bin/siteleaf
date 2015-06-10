@@ -15,7 +15,8 @@ Commands:
   c, config DOMAIN    Configure an existing directory
   n, new DOMAIN       Creates new site on siteleaf.net
   pull theme          Pulls theme files for configured site from Siteleaf
-  push theme          Pushes all files in dir as theme to configured site.
+  pull content        Pulls posts, pages, and site assets
+  push theme          Pushes all files in dir as theme to configured site
   help                Prints this help document
   version             Prints the siteleaf gem version
 
@@ -151,20 +152,20 @@ def put_theme_assets(site_id)
   end
 end
 
-def export_site_content(site_id)
-  FileUtils::mkdir_p 'export/_posts'
+def get_site_content(site_id)
+  FileUtils::mkdir_p 'source/_posts'
 
   site = Siteleaf::Site.find(site_id)
 
   pages = site.pages
 
   pages.each do |page|
-    print "Exporting #{page.title}..."
+    print "Downloading #{page.title}..."
 
     if page.body == ""
       print "skipping.\n"
     else
-      page_path = "export/#{page.slug}.md"
+      page_path = "source/#{page.slug}.md"
 
       open(page_path, /^1\.8/.match(RUBY_VERSION) ? 'w' : 'w:UTF-8') do |f|
         f.puts "---\n"
@@ -179,12 +180,12 @@ def export_site_content(site_id)
     end
 
     if page.posts.count > 0
-      print "Exporting #{page.title} posts..."
+      print "Downloading #{page.title} posts..."
 
       page.posts.each do |post|
         if post.visibility == "visible"
           post_date = Time.parse(post.published_at)
-          post_path = "export/_posts/#{post_date.strftime('%Y-%m-%d')}-#{post.slug}.md"
+          post_path = "source/_posts/#{post_date.strftime('%Y-%m-%d')}-#{post.slug}.md"
 
           open(post_path, /^1\.8/.match(RUBY_VERSION) ? 'w' : 'w:UTF-8') do |f|
             f.puts "---\n"
@@ -200,19 +201,19 @@ def export_site_content(site_id)
 
       print "complete.\n"
     else
-      print "Export #{page.title} posts...skipping.\n"
+      print "Downloading #{page.title} posts...skipping.\n"
     end
   end
 end
 
-def export_site_uploads(site_id)
-  FileUtils::mkdir_p 'export/uploads'
+def get_site_uploads(site_id)
+  FileUtils::mkdir_p 'source/uploads'
 
   site = Siteleaf::Site.find(site_id)
 
   if assets = site.assets
     assets.each do |asset|
-      asset_path = "export/uploads/#{asset.filename}"
+      asset_path = "source/uploads/#{asset.filename}"
       arr_path = asset_path.split('/')
 
       # Make subdirectories if needed
@@ -221,11 +222,11 @@ def export_site_uploads(site_id)
         FileUtils::mkdir_p subdir
       end
 
-      if File.exist?(asset_path) && (asset.checksum == Digest::MD5.hexdigest(File.read(asset_path)))
-        # file is up to date
-      else
-        print "Downloading #{asset.filename}..."
+      print "Downloading #{asset.filename}..."
 
+      if File.exist?(asset_path) && (asset.checksum == Digest::MD5.hexdigest(File.read(asset_path)))
+        print "skipping.\n"
+      else
         file = open(asset.file['url'], /^1\.8/.match(RUBY_VERSION) ? 'r' : 'r:UTF-8') { |f| f.read }
         FileUtils.mkdir_p(File.dirname(asset_path))
         File.open(asset_path, /^1\.8/.match(RUBY_VERSION) ? 'w' : 'w:UTF-8') { |f| f.write(file) }
@@ -279,6 +280,17 @@ when 'pull'
         puts "Site not configured, run `siteleaf config yoursite.com`.\n"
       end
     end
+  when 'content'
+    if auth != false
+      if site_id = get_site_id
+        FileUtils::mkdir_p 'source'
+
+        get_site_content(site_id)
+        get_site_uploads(site_id)
+      else
+        puts "Site not configured, run `siteleaf config yoursite.com`.\n"
+      end
+    end
   else
     puts "`#{ARGV[0]}` command not found.\n"
   end
@@ -291,22 +303,6 @@ when 'push'
       else
         puts "Site not configured, run `siteleaf config yoursite.com`.\n"
       end
-    end
-  else
-    puts "`#{ARGV[0]}` command not found.\n"
-  end
-when 'export'
-  case ARGV[1]
-  when 'content'
-    if auth != false
-      if site_id = get_site_id
-        FileUtils::mkdir_p 'export'
-
-        export_site_content(site_id)
-        export_site_uploads(site_id)
-      end
-    else
-      puts "Site not configured, run `siteleaf config yoursite.com`.\n"
     end
   else
     puts "`#{ARGV[0]}` command not found.\n"
