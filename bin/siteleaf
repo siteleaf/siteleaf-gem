@@ -173,7 +173,15 @@ def get_site_content(site_id)
         f.puts "permalink: #{page.url}"
         f.puts "---\n\n"
 
-        f.puts page.body
+        body = page.body
+
+        unless page.body.match(/\{\{|\{\%/).nil?
+          body =  "{% raw %}\n\n"
+          body += page.body
+          body += "{% endraw %}"
+        end
+
+        f.puts body
 
         print "complete.\n"
       end
@@ -190,11 +198,19 @@ def get_site_content(site_id)
           open(post_path, /^1\.8/.match(RUBY_VERSION) ? 'w' : 'w:UTF-8') do |f|
             f.puts "---\n"
             f.puts "title: \"#{post.title}\"\n"
-            f.puts "date:  #{post_date.strftime('%Y-%m-%d %H-%M-%S')}\n"
+            f.puts "date:  #{post_date.strftime('%Y-%m-%d %H:%M:%S')}\n"
             f.puts "categories: #{page.slug}"
             f.puts "---\n\n"
 
-            f.puts post.body
+            body = post.body
+
+            unless post.body.match(/\{\{|\{\%/).nil?
+              body =  "{% raw %}\n\n"
+              body += post.body
+              body += "{% endraw %}"
+            end
+
+            f.puts body
           end
         end
       end
