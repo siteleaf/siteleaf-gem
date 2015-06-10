@@ -152,8 +152,41 @@ def put_theme_assets(site_id)
   end
 end
 
+def build_jekyll_config(site_id)
+  print "Generating configuration file..."
+
+  site = Siteleaf::Site.find(site_id)
+
+  open("export/_config.yml", /^1\.8/.match(RUBY_VERSION) ? 'w' : 'w:UTF-8') do |f|
+    f.puts "title: #{site.title}\n"
+
+    f.puts "meta: \n"
+    site.attributes['meta'].each do |meta|
+      f.puts "  #{meta['key']}: #{meta['value']}\n"
+    end
+    f.puts "\n"
+
+    # f.puts "source: ./_source\n"
+    f.puts "safe: true\n\n"
+
+    f.puts "markdown: redcarpet\n\n"
+    f.puts "redcarpet:\n"
+    f.puts "  extensions:\n"
+    f.puts "    - autolink\n"
+    f.puts "    - fenced_code_blocks\n"
+    f.puts "    - lax_spacing\n"
+    f.puts "    - strikethrough\n"
+    f.puts "    - superscript\n"
+    f.puts "    - tables\n"
+    f.puts "    - footnotes\n"
+    f.puts "    - highlight\n"
+  end
+
+  print "complete.\n"
+end
+
 def get_site_content(site_id)
-  FileUtils::mkdir_p 'source/_posts'
+  FileUtils::mkdir_p 'export//_posts'
 
   site = Siteleaf::Site.find(site_id)
 
@@ -165,7 +198,7 @@ def get_site_content(site_id)
     if page.body == ""
       print "skipping.\n"
     else
-      page_path = "source/#{page.slug}.md"
+      page_path = "export//#{page.slug}.md"
 
       open(page_path, /^1\.8/.match(RUBY_VERSION) ? 'w' : 'w:UTF-8') do |f|
         f.puts "---\n"
@@ -193,7 +226,7 @@ def get_site_content(site_id)
       page.posts.each do |post|
         if post.visibility == "visible"
           post_date = Time.parse(post.published_at)
-          post_path = "source/_posts/#{post_date.strftime('%Y-%m-%d')}-#{post.slug}.md"
+          post_path = "export//_posts/#{post_date.strftime('%Y-%m-%d')}-#{post.slug}.md"
 
           open(post_path, /^1\.8/.match(RUBY_VERSION) ? 'w' : 'w:UTF-8') do |f|
             f.puts "---\n"
@@ -223,13 +256,13 @@ def get_site_content(site_id)
 end
 
 def get_site_uploads(site_id)
-  FileUtils::mkdir_p 'source/uploads'
+  FileUtils::mkdir_p 'export//uploads'
 
   site = Siteleaf::Site.find(site_id)
 
   if assets = site.assets
     assets.each do |asset|
-      asset_path = "source/uploads/#{asset.filename}"
+      asset_path = "export//uploads/#{asset.filename}"
       arr_path = asset_path.split('/')
 
       # Make subdirectories if needed
@@ -299,8 +332,9 @@ when 'pull'
   when 'content'
     if auth != false
       if site_id = get_site_id
-        FileUtils::mkdir_p 'source'
+        FileUtils::mkdir_p 'export/'
 
+        build_jekyll_config(site_id)
         get_site_content(site_id)
         get_site_uploads(site_id)
       else
