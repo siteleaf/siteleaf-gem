@@ -15,7 +15,8 @@ Commands:
   c, config DOMAIN    Configure an existing directory
   n, new DOMAIN       Creates new site on siteleaf.net
   pull theme          Pulls theme files for configured site from Siteleaf
-  push theme          Pushes all files in dir as theme to configured site.
+  pull content        Pulls posts, pages, and site assets
+  push theme          Pushes all files in dir as theme to configured site
   help                Prints this help document
   version             Prints the siteleaf gem version
 
@@ -107,7 +108,7 @@ def put_theme_assets(site_id)
   updated_count = 0
   ignore_paths = ['config.ru', '.*']
   ignore_paths += File.read('.siteleafignore').split(/\r?\n/) if File.exists?('.siteleafignore')
-  
+
   # upload files
   paths = Dir.glob("**/*")
   paths.each do |path|
@@ -126,10 +127,10 @@ def put_theme_assets(site_id)
       end
     end
   end
-  
+
   # check for old files
   missing_assets = []
-  assets.each do |asset| 
+  assets.each do |asset|
     missing_assets << asset if !paths.include?(asset.filename)
   end
   if missing_assets.empty?
@@ -147,6 +148,158 @@ def put_theme_assets(site_id)
         print "complete.\n"
       end
       puts "=> #{missing_assets.size} asset(s) deleted.\n"
+    end
+  end
+end
+
+def build_jekyll_config(site_id)
+  print "Generating configuration file..."
+
+  site = Siteleaf::Site.find(site_id)
+
+  open("export/_config.yml", /^1\.8/.match(RUBY_VERSION) ? 'w' : 'w:UTF-8') do |f|
+    f.puts "title: #{site.title}\n"
+
+    unless site.attributes['meta'].empty?
+      f.puts "meta: \n"
+      site.attributes['meta'].each do |meta|
+        f.puts "  #{meta['key']}: #{meta['value']}\n"
+      end
+      f.puts "\n"
+    end
+
+    # f.puts "source: ./_source\n"
+    f.puts "safe: true\n\n"
+
+    f.puts "markdown: redcarpet\n\n"
+    f.puts "redcarpet:\n"
+    f.puts "  extensions:\n"
+    f.puts "    - autolink\n"
+    f.puts "    - fenced_code_blocks\n"
+    f.puts "    - lax_spacing\n"
+    f.puts "    - strikethrough\n"
+    f.puts "    - superscript\n"
+    f.puts "    - tables\n"
+    f.puts "    - footnotes\n"
+    f.puts "    - highlight\n"
+  end
+
+  print "complete.\n"
+end
+
+def get_site_content(site_id)
+  FileUtils::mkdir_p 'export/_posts'
+
+  site = Siteleaf::Site.find(site_id)
+
+  pages = site.pages
+
+  pages.each do |page|
+    print "Downloading #{page.title}..."
+
+    if page.body == ""
+      print "skipping.\n"
+    else
+      page_path = "export/#{page.slug}.md"
+
+      open(page_path, /^1\.8/.match(RUBY_VERSION) ? 'w' : 'w:UTF-8') do |f|
+        f.puts "---\n"
+        f.puts "title:     #{page.title}"
+        f.puts "permalink: #{page.url}"
+
+        unless page.attributes['meta'].empty?
+          f.puts "meta:\n"
+          page.attributes['meta'].each do |meta|
+            f.puts "  #{meta['key']}: #{meta['value']}"
+          end
+        end
+
+        f.puts "---\n\n"
+
+        body = page.body
+
+        unless page.body.match(/\{\{|\{\%/).nil?
+          body =  "{% raw %}\n\n"
+          body += page.body
+          body += "{% endraw %}"
+        end
+
+        f.puts body
+
+        print "complete.\n"
+      end
+    end
+
+    if page.posts.count > 0
+      print "Downloading #{page.title} posts..."
+
+      page.posts.each do |post|
+        if post.visibility == "visible"
+          post_date = Time.parse(post.published_at)
+          post_path = "export/_posts/#{post_date.strftime('%Y-%m-%d')}-#{post.slug}.md"
+
+          open(post_path, /^1\.8/.match(RUBY_VERSION) ? 'w' : 'w:UTF-8') do |f|
+            f.puts "---\n"
+            f.puts "title: \"#{post.title}\"\n"
+            f.puts "date:  #{post_date.strftime('%Y-%m-%d %H:%M:%S')}\n"
+            f.puts "categories: #{page.slug}"
+
+            unless post.attributes['meta'].empty?
+              f.puts "meta:\n"
+              post.attributes['meta'].each do |meta|
+                f.puts "  #{meta['key']}: #{meta['value']}"
+              end
+            end
+
+            f.puts "---\n\n"
+
+            body = post.body
+
+            unless post.body.match(/\{\{|\{\%/).nil?
+              body =  "{% raw %}\n\n"
+              body += post.body
+              body += "{% endraw %}"
+            end
+
+            f.puts body
+          end
+        end
+      end
+
+      print "complete.\n"
+    else
+      print "Downloading #{page.title} posts...skipping.\n"
+    end
+  end
+end
+
+def get_site_uploads(site_id)
+  FileUtils::mkdir_p 'export/uploads'
+
+  site = Siteleaf::Site.find(site_id)
+
+  if assets = site.assets
+    assets.each do |asset|
+      asset_path = "export/uploads/#{asset.filename}"
+      arr_path = asset_path.split('/')
+
+      # Make subdirectories if needed
+      if arr_path.length > 3
+        subdir = arr_path[0..(arr_path.length - 2)].join('/')
+        FileUtils::mkdir_p subdir
+      end
+
+      print "Downloading #{asset.filename}..."
+
+      if File.exist?(asset_path) && (asset.checksum == Digest::MD5.hexdigest(File.read(asset_path)))
+        print "skipping.\n"
+      else
+        file = open(asset.file['url'], /^1\.8/.match(RUBY_VERSION) ? 'r' : 'r:UTF-8') { |f| f.read }
+        FileUtils.mkdir_p(File.dirname(asset_path))
+        File.open(asset_path, /^1\.8/.match(RUBY_VERSION) ? 'w' : 'w:UTF-8') { |f| f.write(file) }
+
+        print "complete.\n"
+      end
     end
   end
 end
@@ -190,6 +343,18 @@ when 'pull'
     if auth != false
       if site_id = get_site_id
         get_theme_assets(site_id)
+      else
+        puts "Site not configured, run `siteleaf config yoursite.com`.\n"
+      end
+    end
+  when 'content'
+    if auth != false
+      if site_id = get_site_id
+        FileUtils::mkdir_p 'export/'
+
+        build_jekyll_config(site_id)
+        get_site_content(site_id)
+        get_site_uploads(site_id)
       else
         puts "Site not configured, run `siteleaf config yoursite.com`.\n"
       end
