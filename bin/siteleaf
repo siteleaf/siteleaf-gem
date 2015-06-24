@@ -11,11 +11,12 @@ Usage: siteleaf [COMMAND] [OPTIONS]
 
 Commands:
   auth                Login in with your credentials
-  s, server           Starts a local server.
+  s, server           Starts a local server
   c, config DOMAIN    Configure an existing directory
   n, new DOMAIN       Creates new site on siteleaf.net
   pull theme          Pulls theme files for configured site from Siteleaf
-  push theme          Pushes all files in dir as theme to configured site.
+  push theme          Pushes all files in dir as theme to configured site
+  publish             Publish website to hosting provider
   help                Prints this help document
   version             Prints the siteleaf gem version
 
@@ -23,6 +24,7 @@ Options:
   -h, --help          Prints this help document
   -v, --version       Prints the siteleaf gem version
   -p, --port PORT     Binds local server to PORT (default: 9292)
+  -q, --quiet         Suppress publish status
 
 See https://github.com/siteleaf/siteleaf-gem for additional documentation.
 )
@@ -151,6 +153,24 @@ def put_theme_assets(site_id)
   end
 end
 
+def publish(site_id, quiet = true)
+  site = Siteleaf::Site.new(id: site_id)
+  job = site.publish
+  
+  if quiet
+    puts "=> Publish queued.\n"
+  else
+    last_msg = nil
+    job.stream do |s|
+      if (msg = s["message"]) && (msg != last_msg)
+        puts msg
+        last_msg = msg
+      end
+    end
+    puts "=> Publish completed.\n"
+  end
+end
+
 case ARGV[0]
 when '-v', '--version', 'version'
   puts Siteleaf::VERSION
@@ -209,6 +229,15 @@ when 'push'
     end
   else
     puts "`#{ARGV[0]}` command not found.\n"
+  end
+when 'publish'
+  if auth != false
+    quiet = %w[-q --quiet].include?(ARGV[1]) && ARGV[1]
+    if site_id = get_site_id
+      publish(site_id, quiet)
+    else
+      puts "Site not configured, run `siteleaf config yoursite.com`.\n"
+    end
   end
 else
   puts "`#{ARGV[0]}` command not found.\n"

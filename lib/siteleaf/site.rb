@@ -35,5 +35,10 @@ module Siteleaf
       Client.post "sites/#{self.id}/preview", {"url" => url, "template" => template}
     end
     
+    def publish
+      result = Client.post "sites/#{self.id}/publish", {}
+      Job.new(id: result.parsed_response["job_id"]) if result
+    end
+    
   end
 end
