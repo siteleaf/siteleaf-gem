@@ -1,7 +1,7 @@
 module Siteleaf
   class Site < Entity
 
-    attr_accessor :title, :domain, :timezone
+    attr_accessor :title, :domain, :timezone, :meta
     attr_reader :id, :user_id, :created_at, :updated_at
     
     def self.find_by_domain(domain)
