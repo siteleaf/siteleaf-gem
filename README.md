@@ -63,9 +63,19 @@ To upload your theme to Siteleaf, run the following command:
 
     siteleaf push theme
     
-To switch Siteleaf users or re-authenticate:
+**Publish your site:**
+
+To publish your site changes to your hosting provider, run the following command:
+
+    siteleaf publish
+    
+**Switch Siteleaf users or re-authenticate:**
 
     siteleaf auth
+    
+**For a full list of commands, run:**
+
+    siteleaf help
 
 
 Using this gem in your application
@@ -106,6 +116,9 @@ site = Siteleaf::Site.find('5196f137cc8591956b000001')
 # update site
 site.title = 'New Title'
 site.save
+
+# publish site
+site.publish
 
 # delete site
 site.delete
