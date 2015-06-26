@@ -27,6 +27,11 @@ module Siteleaf
       result.map { |r| Page.new(r) } if result
     end
     
+    def posts
+      result = Client.get "sites/#{self.id}/posts"
+      result.map { |r| Post.new(r) } if result
+    end
+    
     def resolve(url = '/')
       Client.get "sites/#{self.id}/resolve", {"url" => url}
     end
