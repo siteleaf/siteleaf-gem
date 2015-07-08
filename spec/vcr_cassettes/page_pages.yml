@@ -1,0 +1,45 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://:@api.siteleaf.com/v1/pages/?include=pages
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - Ruby
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json; charset=UTF-8
+      Date:
+      - Wed, 01 Jul 2015 14:09:52 GMT
+      Server:
+      - nginx/1.6.2
+      Set-Cookie:
+      - rack.session=BAh7B0kiD3Nlc3Npb25faWQGOgZFVEkiRWI1MmI3Y2UyYmZkOTQyZjNmZGRi%0AODg4YzVjMDk0MDcyNzViZjUyNWViY2E5N2E0NTNmMjdlZmM2MjZjYmJhNjAG%0AOwBGSSIYd2FyZGVuLnVzZXIuYXBpLmtleQY7AFRVOhNCU09OOjpPYmplY3RJ%0AZCIRVL8I%2BV3eIqI4AAY0%0A--f31eac172c48676170f3ded1af2c0b876784b98b;
+        domain=.siteleaf.com; path=/; expires=Fri, 31 Jul 2015 14:09:52 -0000
+      Content-Length:
+      - '3456'
+      Connection:
+      - keep-alive
+    body:
+      encoding: UTF-8
+      string: '{"id":"","title":"departments","slug":"departments","url":"/departments","body":"","visibility":"visible","created_at":"2015-05-06T18:51:21.995+00:00","updated_at":"2015-05-06T18:51:21.995+00:00","published_at":"2015-05-06T18:51:00.000+00:00","user_id":"","site_id":"","parent_id":null,"pages":[{"id":"","title":"Development
+        at Bobst","slug":"development-at-bobst-1","url":"/departments/development-at-bobst-1","body":null,"visibility":"visible","created_at":"2015-06-10T16:32:16.107+00:00","updated_at":"2015-06-10T16:32:16.107+00:00","published_at":"2015-06-10T16:32:16.109+00:00","user_id":"","site_id":"","parent_id":"","meta":[]},{"id":"","title":"Access,
+        Delivery \u0026 Resource Sharing Services","slug":"access-delivery-and-resource-sharing-services-1","url":"/departments/access-delivery-and-resource-sharing-services-1","body":null,"visibility":"visible","created_at":"2015-06-10T16:32:17.704+00:00","updated_at":"2015-06-10T16:32:17.704+00:00","published_at":"2015-06-10T16:32:17.706+00:00","user_id":"","site_id":"","parent_id":"","meta":[]},{"id":"","title":"Digital
+        Scholarship Services","slug":"digital-scholarship-services-1","url":"/departments/digital-scholarship-services-1","body":"","visibility":"visible","created_at":"2015-06-10T16:32:19.546+00:00","updated_at":"2015-06-24T16:25:10.495+00:00","published_at":"2015-06-10T16:32:00.000+00:00","user_id":"","site_id":"","parent_id":"","meta":[]},{"id":"","title":"Business
+        \u0026 Government Information Services","slug":"business-and-government-information-services-1","url":"/departments/business-and-government-information-services-1","body":null,"visibility":"visible","created_at":"2015-06-10T16:32:20.664+00:00","updated_at":"2015-06-10T16:32:20.664+00:00","published_at":"2015-06-10T16:32:20.666+00:00","user_id":"","site_id":"","parent_id":"","meta":[]},{"id":"","title":"Data
+        Services","slug":"data-services-1","url":"/departments/data-services-1","body":null,"visibility":"visible","created_at":"2015-06-10T16:32:21.319+00:00","updated_at":"2015-06-10T16:32:21.319+00:00","published_at":"2015-06-10T16:32:21.321+00:00","user_id":"","site_id":"","parent_id":"","meta":[]},{"id":"","title":"NYU
+        Press: https://docs.google.com/document/d/1OBK0LWo-mEgvDquzajTB7L1eVXWQlkhsw8RkbdGO-j8/edit","slug":"nyu-press-https-slash-slash-docs-dot-google-dot-com-slash-document-slash-d-slash-1obk0lwo-megvdquzajtb7l1evxwqlkhsw8rkbdgo-j8-slash-edit-1","url":"/departments/nyu-press-https-slash-slash-docs-dot-google-dot-com-slash-document-slash-d-slash-1obk0lwo-megvdquzajtb7l1evxwqlkhsw8rkbdgo-j8-slash-edit-1","body":null,"visibility":"visible","created_at":"2015-06-10T16:32:23.134+00:00","updated_at":"2015-06-10T16:32:23.134+00:00","published_at":"2015-06-10T16:32:23.135+00:00","user_id":"","site_id":"","parent_id":"","meta":[]}],"meta":[]}'
+    http_version:
+  recorded_at: Wed, 01 Jul 2015 14:09:57 GMT
+recorded_with: VCR 2.9.3
