@@ -1,0 +1,54 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://:@api.siteleaf.com/v1/sites//pages
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - Ruby
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json; charset=UTF-8
+      Date:
+      - Wed, 01 Jul 2015 15:14:29 GMT
+      Server:
+      - nginx/1.6.2
+      Set-Cookie:
+      - rack.session=BAh7B0kiD3Nlc3Npb25faWQGOgZFVEkiRWZhOWI3NjM5ZGI1NDA1OTMyZWEw%0AOGFkM2NjODViZjU1Y2U0MzE1ZmRhOGQwYjQ0ZjdjYTlkMzdmNjg4OWNlZjcG%0AOwBGSSIYd2FyZGVuLnVzZXIuYXBpLmtleQY7AFRVOhNCU09OOjpPYmplY3RJ%0AZCIRVL8I%2BV3eIqI4AAY0%0A--e021fa92529cfd04568384d29399ca36b618bfbf;
+        domain=.siteleaf.com; path=/; expires=Fri, 31 Jul 2015 15:14:29 -0000
+      Content-Length:
+      - '8334'
+      Connection:
+      - keep-alive
+    body:
+      encoding: UTF-8
+      string: '[{"id":"","title":"home","slug":"home","url":"/home","body":"","visibility":"visible","created_at":"2015-04-06T16:32:23.303+00:00","updated_at":"2015-04-06T16:32:23.303+00:00","published_at":"2015-04-06T16:32:00.000+00:00","user_id":"","site_id":"","parent_id":null,"meta":[]},{"id":"","title":"hours","slug":"hours","url":"/hours","body":"","visibility":"visible","created_at":"2015-04-06T17:32:19.276+00:00","updated_at":"2015-04-06T17:32:19.276+00:00","published_at":"2015-04-06T17:32:00.000+00:00","user_id":"","site_id":"","parent_id":null,"meta":[]},{"id":"","title":"staff","slug":"staff","url":"/staff","body":"","visibility":"visible","created_at":"2015-04-20T19:31:58.753+00:00","updated_at":"2015-04-20T19:31:58.753+00:00","published_at":"2015-04-20T19:31:00.000+00:00","user_id":"","site_id":"","parent_id":null,"meta":[]},{"id":"","title":"LibAnswers","slug":"libanswers","url":"/libanswers","body":"","visibility":"visible","created_at":"2015-04-30T15:11:09.860+00:00","updated_at":"2015-04-30T15:11:09.860+00:00","published_at":"2015-04-30T15:10:00.000+00:00","user_id":"","site_id":"","parent_id":null,"meta":[]},{"id":"","title":"departments","slug":"departments","url":"/departments","body":"","visibility":"visible","created_at":"2015-05-06T18:51:21.995+00:00","updated_at":"2015-05-06T18:51:21.995+00:00","published_at":"2015-05-06T18:51:00.000+00:00","user_id":"","site_id":"","parent_id":null,"meta":[]},{"id":"","title":"Department
+        Name","slug":"department-name","url":"/department-name","body":"","visibility":"visible","created_at":"2015-06-18T19:20:00.591+00:00","updated_at":"2015-06-18T19:20:00.591+00:00","published_at":"2015-06-18T19:20:00.592+00:00","user_id":"","site_id":"","parent_id":"234","meta":[]},{"id":"","title":"Department
+        Name","slug":"department-name-1","url":"/department-name-1","body":"","visibility":"visible","created_at":"2015-06-18T19:20:44.491+00:00","updated_at":"2015-06-18T19:20:44.491+00:00","published_at":"2015-06-18T19:20:44.493+00:00","user_id":"","site_id":"","parent_id":"234","meta":[]},{"id":"","title":"Department
+        Name","slug":"department-name-2","url":"/department-name-2","body":"","visibility":"visible","created_at":"2015-06-18T19:21:55.835+00:00","updated_at":"2015-06-18T19:21:55.835+00:00","published_at":"2015-06-18T19:21:55.836+00:00","user_id":"","site_id":"","parent_id":"234","meta":[]},{"id":"","title":"Department
+        Name","slug":"department-name-3","url":"/department-name-3","body":"","visibility":"visible","created_at":"2015-06-18T19:22:22.644+00:00","updated_at":"2015-06-18T19:22:22.644+00:00","published_at":"2015-06-18T19:22:22.645+00:00","user_id":"","site_id":"","parent_id":"234","meta":[]},{"id":"","title":"Department
+        Name","slug":"department-name-4","url":"/department-name-4","body":"","visibility":"visible","created_at":"2015-06-18T19:23:04.212+00:00","updated_at":"2015-06-18T19:23:04.212+00:00","published_at":"2015-06-18T19:23:04.214+00:00","user_id":"","site_id":"","parent_id":"234","meta":[]},{"id":"","title":"Department
+        Name","slug":"department-name-5","url":"/department-name-5","body":"","visibility":"visible","created_at":"2015-06-18T19:23:37.242+00:00","updated_at":"2015-06-18T19:23:37.242+00:00","published_at":"2015-06-18T19:23:37.243+00:00","user_id":"","site_id":"","parent_id":"234","meta":[]},{"id":"","title":"Department
+        Name","slug":"department-name-6","url":"/department-name-6","body":"","visibility":"visible","created_at":"2015-06-18T19:24:48.056+00:00","updated_at":"2015-06-18T19:24:48.056+00:00","published_at":"2015-06-18T19:24:48.057+00:00","user_id":"","site_id":"","parent_id":"234","meta":[]},{"id":"","title":"Department
+        Name","slug":"department-name-7","url":"/department-name-7","body":"","visibility":"visible","created_at":"2015-06-18T19:25:26.291+00:00","updated_at":"2015-06-18T19:25:26.291+00:00","published_at":"2015-06-18T19:25:26.292+00:00","user_id":"","site_id":"","parent_id":"234","meta":[]},{"id":"","title":"Department
+        Name","slug":"department-name-8","url":"/department-name-8","body":"","visibility":"visible","created_at":"2015-06-18T19:25:59.332+00:00","updated_at":"2015-06-18T19:25:59.332+00:00","published_at":"2015-06-18T19:25:59.334+00:00","user_id":"","site_id":"","parent_id":"234","meta":[]},{"id":"","title":"Development
+        at Bobst","slug":"development-at-bobst-1","url":"/departments/development-at-bobst-1","body":null,"visibility":"visible","created_at":"2015-06-10T16:32:16.107+00:00","updated_at":"2015-06-10T16:32:16.107+00:00","published_at":"2015-06-10T16:32:16.109+00:00","user_id":"","site_id":"","parent_id":"","meta":[]},{"id":"","title":"Access,
+        Delivery \u0026 Resource Sharing Services","slug":"access-delivery-and-resource-sharing-services-1","url":"/departments/access-delivery-and-resource-sharing-services-1","body":null,"visibility":"visible","created_at":"2015-06-10T16:32:17.704+00:00","updated_at":"2015-06-10T16:32:17.704+00:00","published_at":"2015-06-10T16:32:17.706+00:00","user_id":"","site_id":"5522b4265dde22cab20018e7","parent_id":"","meta":[]},{"id":"","title":"Digital
+        Scholarship Services","slug":"digital-scholarship-services-1","url":"/departments/digital-scholarship-services-1","body":"","visibility":"visible","created_at":"2015-06-10T16:32:19.546+00:00","updated_at":"2015-06-24T16:25:10.495+00:00","published_at":"2015-06-10T16:32:00.000+00:00","user_id":"","site_id":"","parent_id":"","meta":[]},{"id":"","title":"Business
+        \u0026 Government Information Services","slug":"business-and-government-information-services-1","url":"/departments/business-and-government-information-services-1","body":null,"visibility":"visible","created_at":"2015-06-10T16:32:20.664+00:00","updated_at":"2015-06-10T16:32:20.664+00:00","published_at":"2015-06-10T16:32:20.666+00:00","user_id":"","site_id":"","parent_id":"","meta":[]},{"id":"","title":"Data
+        Services","slug":"data-services-1","url":"/departments/data-services-1","body":null,"visibility":"visible","created_at":"2015-06-10T16:32:21.319+00:00","updated_at":"2015-06-10T16:32:21.319+00:00","published_at":"2015-06-10T16:32:21.321+00:00","user_id":"","site_id":"","parent_id":"","meta":[]},{"id":"","title":"NYU
+        Press: https://docs.google.com/document/d/1OBK0LWo-mEgvDquzajTB7L1eVXWQlkhsw8RkbdGO-j8/edit","slug":"nyu-press-https-slash-slash-docs-dot-google-dot-com-slash-document-slash-d-slash-1obk0lwo-megvdquzajtb7l1evxwqlkhsw8rkbdgo-j8-slash-edit-1","url":"/departments/nyu-press-https-slash-slash-docs-dot-google-dot-com-slash-document-slash-d-slash-1obk0lwo-megvdquzajtb7l1evxwqlkhsw8rkbdgo-j8-slash-edit-1","body":null,"visibility":"visible","created_at":"2015-06-10T16:32:23.134+00:00","updated_at":"2015-06-10T16:32:23.134+00:00","published_at":"2015-06-10T16:32:23.135+00:00","user_id":"","site_id":"","parent_id":"","meta":[]}]'
+    http_version:
+  recorded_at: Wed, 01 Jul 2015 15:14:34 GMT
+recorded_with: VCR 2.9.3
