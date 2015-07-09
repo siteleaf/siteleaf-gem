@@ -4,31 +4,7 @@ require 'siteleaf'
 require 'fileutils'
 require 'open-uri'
 require 'digest/md5'
-
-def help
-  %Q(
-Usage: siteleaf [COMMAND] [OPTIONS]
-
-Commands:
-  auth                Login in with your credentials
-  s, server           Starts a local server
-  c, config DOMAIN    Configure an existing directory
-  n, new DOMAIN       Creates new site on siteleaf.net
-  pull theme          Pulls theme files for configured site from Siteleaf
-  push theme          Pushes all files in dir as theme to configured site
-  publish             Publish website to hosting provider
-  help                Prints this help document
-  version             Prints the siteleaf gem version
-
-Options:
-  -h, --help          Prints this help document
-  -v, --version       Prints the siteleaf gem version
-  -p, --port PORT     Binds local server to PORT (default: 9292)
-  -q, --quiet         Suppress publish status
-
-See https://github.com/siteleaf/siteleaf-gem for additional documentation.
-)
-end
+require_relative 'help'
 
 def auth(re_auth = false)
   Siteleaf.load_settings if !re_auth
@@ -109,7 +85,7 @@ def put_theme_assets(site_id)
   updated_count = 0
   ignore_paths = ['config.ru', '.*']
   ignore_paths += File.read('.siteleafignore').split(/\r?\n/) if File.exists?('.siteleafignore')
-  
+
   # upload files
   paths = Dir.glob("**/*")
   paths.each do |path|
@@ -128,10 +104,10 @@ def put_theme_assets(site_id)
       end
     end
   end
-  
+
   # check for old files
   missing_assets = []
-  assets.each do |asset| 
+  assets.each do |asset|
     missing_assets << asset if !paths.include?(asset.filename)
   end
   if missing_assets.empty?
@@ -156,7 +132,7 @@ end
 def publish(site_id, quiet = true)
   site = Siteleaf::Site.new(id: site_id)
   job = site.publish
-  
+
   if quiet
     puts "=> Publish queued.\n"
   else
