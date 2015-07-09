@@ -6,6 +6,7 @@ require 'open-uri'
 require 'digest/md5'
 require_relative 'help'
 require_relative 'authenticate'
+require_relative 'configure'
 
 def get_site_id
   if File.exist?('config.ru')
