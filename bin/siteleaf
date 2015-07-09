@@ -18,21 +18,16 @@ def fetch_site_id_config
   nil
 end
 
-case ARGV[0]
-when '-v', '--version', 'version'
-  puts Siteleaf::VERSION
-when '-h', '--help', 'help'
-  puts help
-when 's', 'server'
+def sever_command
   if File.exist?('config.ru')
     port = ARGV[2] if %w[-p --port].include?(ARGV[1]) && ARGV[1]
     `rackup config.ru -p #{port || '9292'} >&2`
   else
     puts "No config found, run `siteleaf config yoursite.com`.\n"
   end
-when 'auth'
-  auth true
-when 'c', 'config', 'setup'
+end
+
+def config_command
   if auth != false
     if site = Siteleaf::Site.find_by_domain(ARGV[1])
       config site
@@ -40,7 +35,9 @@ when 'c', 'config', 'setup'
       puts "No site found for `#{ARGV[1]}`, run `siteleaf new #{ARGV[1]}` to create it.\n"
     end
   end
-when 'n', 'new'
+end
+
+def new_command
   if auth != false
     if (site = Siteleaf::Site.create(:title => ARGV[1], :domain => ARGV[1])) && (!site.error)
       dir = ARGV.size >= 3 ? ARGV[2] : ARGV[1]
@@ -51,7 +48,9 @@ when 'n', 'new'
       puts "Could not create site `#{ARGV[1]}`.\n"
     end
   end
-when 'pull'
+end
+
+def pull_command
   case ARGV[1]
   when 'theme'
     if auth != false
@@ -64,7 +63,9 @@ when 'pull'
   else
     puts "`#{ARGV[0]}` command not found.\n"
   end
-when 'push'
+end
+
+def push_command
   case ARGV[1]
   when 'theme'
     if auth != false
@@ -77,8 +78,10 @@ when 'push'
   else
     puts "`#{ARGV[0]}` command not found.\n"
   end
-when 'publish'
-  if auth != false
+end
+
+def publish_command
+   if auth != false
     quiet = %w[-q --quiet].include?(ARGV[1]) && ARGV[1]
     if site_id = fetch_site_id_config
       publish(site_id, quiet)
@@ -86,6 +89,27 @@ when 'publish'
       puts "Site not configured, run `siteleaf config yoursite.com`.\n"
     end
   end
+end
+
+case ARGV[0]
+when '-v', '--version', 'version'
+  puts Siteleaf::VERSION
+when '-h', '--help', 'help'
+  puts help
+when 's', 'server'
+  sever_command
+when 'auth'
+  auth true
+when 'c', 'config', 'setup'
+  config_command
+when 'n', 'new'
+  new_command
+when 'pull'
+  pull_command
+when 'push'
+  push_command
+when 'publish'
+  publish_command
 else
   puts "`#{ARGV[0]}` command not found.\n"
   puts help
