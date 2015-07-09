@@ -1,6 +1,6 @@
 module Siteleaf
+  # Defines attributes of all elements in siteleaf
   class Entity
-  
     attr_reader :error
 
     def initialize(attributes = {})
@@ -8,58 +8,56 @@ module Siteleaf
     end
 
     def self.all
-      result = Client.get "#{self.endpoint}"
-      result.map { |r| self.new(r) } if result
+      result = Client.get "#{endpoint}"
+      result.map { |r| new(r) } if result
     end
 
     def self.find(id)
-      result = Client.get "#{self.endpoint}/#{id}"
-      self.new(result) if result
+      result = Client.get "#{endpoint}/#{id}"
+      new(result) if result
     end
 
     def self.create(attributes = {})
-      self.new(attributes).save
+      new(attributes).save
     end
 
     def save
-      if self.id
-        result = Client.put "#{self.class.endpoint}/#{self.id}", self.attributes
+      if id
+        result = Client.put "#{self.class.endpoint}/#{id}", attributes
       else
-        result = Client.post "#{self.create_endpoint}", self.attributes
+        result = Client.post "#{create_endpoint}", attributes
       end
-      if result
-        self.attributes = result
-        return self
-      end
+      return unless result
+      self.attributes = result
+      self
     end
 
     def self.delete(id)
-      Client.delete "#{self.endpoint}/#{id}"
+      Client.delete "#{endpoint}/#{id}"
     end
 
     def delete
-      Client.delete "#{self.class.endpoint}/#{self.id}"
+      Client.delete "#{self.class.endpoint}/#{id}"
     end
 
     def attributes
-      Hash[self.instance_variables.map { |name| [name[1..-1], self.instance_variable_get(name)] }]
+      Hash[instance_variables.map { |name| [name[1..-1], instance_variable_get(name)] }]
     end
 
     def attributes=(attributes = {})
-      attributes.each_pair { |k, v| self.instance_variable_set("@#{k}", v) }
+      attributes.each_pair { |k, v| instance_variable_set("@#{k}", v) }
     end
 
     def self.class_name
-      self.name.split('::')[-1]
+      name.split('::')[-1]
     end
 
     def self.endpoint
-      "#{self.class_name.downcase}s"
+      "#{class_name.downcase}s"
     end
 
     def create_endpoint
       self.class.endpoint
     end
-
   end
 end
