@@ -18,9 +18,32 @@ def fetch_site_id_config
   nil
 end
 
+def authenticated?
+  if auth == false
+    puts 'You are not authenticated. Please run `siteleaf auth`'
+    return false
+  end
+  true
+end
+
+def site_configured?
+  if (site_id = fetch_site_id_config).nil?
+    puts "Site not configured, run `siteleaf config yoursite.com`.\n"
+    return false
+  end
+  site_id
+end
+
+def configure_site(site)
+  dir = ARGV.size >= 3 ? ARGV[2] : ARGV[1]
+  Dir.mkdir(dir) unless File.directory?(dir)
+  Dir.chdir(dir)
+  config site
+end
+
 def sever_command
   if File.exist?('config.ru')
-    port = ARGV[2] if %w[-p --port].include?(ARGV[1]) && ARGV[1]
+    port = ARGV[2] if %w(-p --port).include?(ARGV[1]) && ARGV[1]
     `rackup config.ru -p #{port || '9292'} >&2`
   else
     puts "No config found, run `siteleaf config yoursite.com`.\n"
@@ -28,67 +51,51 @@ def sever_command
 end
 
 def config_command
-  if auth != false
-    if site = Siteleaf::Site.find_by_domain(ARGV[1])
-      config site
-    else
-      puts "No site found for `#{ARGV[1]}`, run `siteleaf new #{ARGV[1]}` to create it.\n"
-    end
+  return unless authenticated?
+  if !(site = Siteleaf::Site.find_by_domain(ARGV[1])).nil?
+    config site
+  else
+    puts "No site found for `#{ARGV[1]}`, run `siteleaf new #{ARGV[1]}` to create it.\n"
   end
 end
 
 def new_command
-  if auth != false
-    if (site = Siteleaf::Site.create(:title => ARGV[1], :domain => ARGV[1])) && (!site.error)
-      dir = ARGV.size >= 3 ? ARGV[2] : ARGV[1]
-      Dir.mkdir(dir) unless File.directory?(dir)
-      Dir.chdir(dir)
-      config site
-    else
-      puts "Could not create site `#{ARGV[1]}`.\n"
-    end
+  return unless authenticated?
+  if (site = Siteleaf::Site.create(title: ARGV[1], domain: ARGV[1])) && (!site.error)
+    configure_site(site)
+  else
+    puts "Could not create site `#{ARGV[1]}`.\n"
   end
 end
 
 def pull_command
-  case ARGV[1]
-  when 'theme'
-    if auth != false
-      if site_id = fetch_site_id_config
-        get_theme_assets(site_id)
-      else
-        puts "Site not configured, run `siteleaf config yoursite.com`.\n"
-      end
-    end
+  if ARGV[1] == 'theme'
+    return unless authenticated?
+    site_id = site_configured?
+    return unless site_id
+    get_theme_assets(site_id)
   else
     puts "`#{ARGV[0]}` command not found.\n"
   end
 end
 
 def push_command
-  case ARGV[1]
-  when 'theme'
-    if auth != false
-      if site_id = fetch_site_id_config
-        put_theme_assets(site_id)
-      else
-        puts "Site not configured, run `siteleaf config yoursite.com`.\n"
-      end
-    end
+  if ARGV[1] == 'theme'
+    return unless authenticated?
+    site_id = site_configured?
+    return unless site_id
+    put_theme_assets(site_id)
   else
     puts "`#{ARGV[0]}` command not found.\n"
   end
 end
 
 def publish_command
-   if auth != false
-    quiet = %w[-q --quiet].include?(ARGV[1]) && ARGV[1]
-    if site_id = fetch_site_id_config
-      publish(site_id, quiet)
-    else
-      puts "Site not configured, run `siteleaf config yoursite.com`.\n"
-    end
-  end
+  return unless authenticated?
+  quiet = %w(-q --quiet).include?(ARGV[1]) && ARGV[1]
+  site_id = site_configured?
+  return unless site_id
+  publish(site_id, quiet)
 end
 
 case ARGV[0]
