@@ -8,6 +8,7 @@ require_relative 'help'
 require_relative 'authenticate'
 require_relative 'configure'
 require_relative 'pull'
+require_relative 'push'
 
 def get_site_id
   if File.exist?('config.ru')
