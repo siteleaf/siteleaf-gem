@@ -18,12 +18,13 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'httparty', '>= 0.13.3'
   gem.add_dependency 'httmultiparty', '>= 0.3.13'
   gem.add_dependency 'rack'
+
   # Added for RSpec testing
-  gem.add_dependency 'rspec'
+  gem.add_development_dependency 'rspec'
   # To record cassettes for offline testing
-  gem.add_dependency 'vcr'
+  gem.add_development_dependency 'vcr'
   # To mock a fake web for HTTP requests
-  gem.add_dependency 'webmock'
+  gem.add_development_dependency 'webmock'
 
   gem.files         = `git ls-files`.split($/)
   gem.files         += Dir.glob("lib/**/*.rb")
