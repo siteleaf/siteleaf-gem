@@ -11,12 +11,11 @@ require_relative 'pull'
 require_relative 'push'
 require_relative 'publish'
 
-def get_site_id
-  if File.exist?('config.ru')
-    if match = /:site_id => '([a-z0-9]{24})'/i.match(File.read('config.ru'))
-      return match[1]
-    end
-  end
+def fetch_site_id_config
+  return nil unless File.exist?('config.ru')
+  match = /:site_id => '([a-z0-9]{24})'/i.match(File.read('config.ru'))
+  return match[1] unless match.nil?
+  nil
 end
 
 case ARGV[0]
@@ -56,7 +55,7 @@ when 'pull'
   case ARGV[1]
   when 'theme'
     if auth != false
-      if site_id = get_site_id
+      if site_id = fetch_site_id_config
         get_theme_assets(site_id)
       else
         puts "Site not configured, run `siteleaf config yoursite.com`.\n"
@@ -69,7 +68,7 @@ when 'push'
   case ARGV[1]
   when 'theme'
     if auth != false
-      if site_id = get_site_id
+      if site_id = fetch_site_id_config
         put_theme_assets(site_id)
       else
         puts "Site not configured, run `siteleaf config yoursite.com`.\n"
@@ -81,7 +80,7 @@ when 'push'
 when 'publish'
   if auth != false
     quiet = %w[-q --quiet].include?(ARGV[1]) && ARGV[1]
-    if site_id = get_site_id
+    if site_id = fetch_site_id_config
       publish(site_id, quiet)
     else
       puts "Site not configured, run `siteleaf config yoursite.com`.\n"
