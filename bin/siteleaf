@@ -4,14 +4,9 @@ require 'siteleaf'
 require 'fileutils'
 require 'open-uri'
 require 'digest/md5'
-require_relative 'siteleaf_commands'
-require_relative 'authenticate'
-require_relative 'configure'
-require_relative 'common'
-require_relative 'help'
-require_relative 'pull'
-require_relative 'push'
-require_relative 'publish'
+
+# Dir['/bin/SiteleafCommands/*.rb'].each { |file| puts file }
+require_relative 'SiteleafCommands/siteleaf_commands'
 
 case ARGV[0]
 when '-v', '--version', 'version'
@@ -21,7 +16,7 @@ when '-h', '--help', 'help'
 when 's', 'server'
   SiteleafCommands.sever_command
 when 'auth'
-  SiteleafCommands::Authenticate.auth true
+  SiteleafCommands::Execution::Authenticate.auth true
 when 'c', 'config', 'setup'
   SiteleafCommands.config_command
 when 'n', 'new'

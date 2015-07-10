@@ -1,3 +1,11 @@
+require_relative 'Execution/configure'
+require_relative 'Execution/common'
+require_relative 'Execution/help'
+require_relative 'Execution/pull'
+require_relative 'Execution/push'
+require_relative 'Execution/publish'
+require_relative 'Execution/authenticate'
+
 # Provides functions for each SiteLeaf Command-line statement
 module SiteleafCommands
   def self.sever_command
