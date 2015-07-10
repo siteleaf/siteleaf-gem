@@ -80,7 +80,7 @@ when '-h', '--help', 'help'
 when 's', 'server'
   SiteleafCommands.sever_command
 when 'auth'
-  Authenticate.auth true
+  SiteleafCommands::Authenticate.auth true
 when 'c', 'config', 'setup'
   SiteleafCommands.config_command
 when 'n', 'new'
