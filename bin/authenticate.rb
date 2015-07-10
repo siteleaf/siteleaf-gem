@@ -1,5 +1,5 @@
 module SiteleafCommands
-  # Provides functions for each User Authentication
+  # Provides functions for User Authentication
   module Authenticate
     def authenticate
       print 'Enter your Siteleaf e-mail: '

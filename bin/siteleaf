@@ -26,7 +26,7 @@ module SiteleafCommands
   def config_command
     return unless Common.authenticated?
     if !(site = Siteleaf::Site.find_by_domain(ARGV[1])).nil?
-      config site
+      Config.config site
     else
       puts "No site found for `#{ARGV[1]}`, run `siteleaf new #{ARGV[1]}` to create it.\n"
     end
