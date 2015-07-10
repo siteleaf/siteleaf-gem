@@ -1,7 +1,7 @@
 module SiteleafCommands
   # Provides Publish functions for sitleaf publish command
   module Publish
-    def do_the_job(job)
+    def self.do_the_job(job)
       last_msg = nil
       job.stream do |s|
         if (msg = s['message']) && (msg != last_msg)
@@ -11,7 +11,7 @@ module SiteleafCommands
       end
     end
 
-    def publish(site_id, quiet = true)
+    def self.publish(site_id, quiet = true)
       site = Siteleaf::Site.new(id: site_id)
       job = site.publish
       if quiet

@@ -1,7 +1,7 @@
 module SiteleafCommands
   # Provides functions for each User Authentication
   module Help
-    def help_commands
+    def self.help_commands
       %(  Commands:
         auth                Login in with your credentials
         s, server           Starts a local server
@@ -14,7 +14,7 @@ module SiteleafCommands
         version             Prints the siteleaf gem version)
     end
 
-    def help_options
+    def self.help_options
       %(
       Options:
         -h, --help          Prints this help document
@@ -25,7 +25,7 @@ module SiteleafCommands
       )
     end
 
-    def help
+    def self.help
       "  Usage: siteleaf [COMMAND] [OPTIONS])\n" + help_commands + help_options
     end
   end
