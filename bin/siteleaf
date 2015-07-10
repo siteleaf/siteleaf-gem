@@ -68,7 +68,7 @@ module SiteleafCommands
     quiet = %w(-q --quiet).include?(ARGV[1]) && ARGV[1]
     site_id = Common.site_configured?
     return unless site_id
-    publish(site_id, quiet)
+    Publish.publish(site_id, quiet)
   end
 end
 
