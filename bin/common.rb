@@ -9,7 +9,7 @@ module SiteleafCommands
     end
 
     def self.authenticated?
-      if auth == false
+      if Authenticate.auth == false
         puts 'You are not authenticated. Please run `siteleaf auth`'
         return false
       end
@@ -28,7 +28,7 @@ module SiteleafCommands
       dir = ARGV.size >= 3 ? ARGV[2] : ARGV[1]
       Dir.mkdir(dir) unless File.directory?(dir)
       Dir.chdir(dir)
-      config site
+      Config.config site
     end
   end
 end
