@@ -14,8 +14,8 @@ describe 'Authenticate' do
 
   describe '#self.authenticate_write_file' do
     subject { authenticate.authenticate_write_file }
-    context '' do
-      it '' do
+    context 'is called when user is Authenticated' do
+      it 'should Marshal.dump Key and secret  to a local `~/.siteleaf file' do
         # Pending
       end
     end
@@ -23,8 +23,8 @@ describe 'Authenticate' do
 
   describe '#self.auth_error' do
     subject { authenticate.auth_error }
-    context '' do
-      it '' do
+    context 'is called when user faces Authentication error' do
+      it 'should return false and print an error statement' do
         expect(authenticate.auth_error).to be_falsey
       end
     end
