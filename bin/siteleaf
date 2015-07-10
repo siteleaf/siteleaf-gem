@@ -78,19 +78,19 @@ when '-v', '--version', 'version'
 when '-h', '--help', 'help'
   puts help
 when 's', 'server'
-  SiteleafCommands::sever_command
+  SiteleafCommands.sever_command
 when 'auth'
-  auth true
+  Authenticate.auth true
 when 'c', 'config', 'setup'
-  SiteleafCommands::config_command
+  SiteleafCommands.config_command
 when 'n', 'new'
-  SiteleafCommands::new_command
+  SiteleafCommands.new_command
 when 'pull'
-  SiteleafCommands::pull_command
+  SiteleafCommands.pull_command
 when 'push'
-  SiteleafCommands::push_command
+  SiteleafCommands.push_command
 when 'publish'
-  SiteleafCommands::publish_command
+  SiteleafCommands.publish_command
 else
   puts "`#{ARGV[0]}` command not found.\n"
   puts help
