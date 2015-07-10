@@ -1,7 +1,7 @@
 module SiteleafCommands
   # Provides Configure functions for sitleaf config command
   module Config
-    def config_ru_text(site)
+    def self.config_ru_text(site)
       "# Intended for development purposes only, do not upload or use in production.
       # See https://github.com/siteleaf/siteleaf-gem for documentation.
       require 'rubygems'
@@ -9,12 +9,12 @@ module SiteleafCommands
       run Siteleaf::Server.new(:site_id => '#{site.id}')"
     end
 
-    def not_configured
+    def self.not_configured
       puts "=> Site configured, run `siteleaf server` to test site locally.\n"
       false
     end
 
-    def config(site)
+    def self.config(site)
       File.open('config.ru', 'w') { |file| file.write config_ru_text(site) }
       pow_path = File.expand_path('~/.pow')
       return not_configured unless File.directory?(pow_path)
