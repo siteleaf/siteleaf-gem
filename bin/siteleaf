@@ -76,7 +76,7 @@ case ARGV[0]
 when '-v', '--version', 'version'
   puts Siteleaf::VERSION
 when '-h', '--help', 'help'
-  puts help
+  puts Help.help
 when 's', 'server'
   SiteleafCommands.sever_command
 when 'auth'
@@ -93,5 +93,5 @@ when 'publish'
   SiteleafCommands.publish_command
 else
   puts "`#{ARGV[0]}` command not found.\n"
-  puts help
+  puts Help.help
 end
