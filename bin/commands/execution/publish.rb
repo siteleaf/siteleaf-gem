@@ -1,4 +1,4 @@
-module SiteleafCommands
+module Commands
   module Execution
     # Provides Publish functions for sitleaf publish command
     module Publish

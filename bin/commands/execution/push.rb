@@ -1,4 +1,4 @@
-module SiteleafCommands
+module Commands
   module Execution
     # Provides put_theme_assets functions for sitleaf push command
     module Push

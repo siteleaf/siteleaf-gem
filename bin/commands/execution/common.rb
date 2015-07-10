@@ -1,4 +1,4 @@
-module SiteleafCommands
+module Commands
   module Execution
     # Generalized functions that are used to execute various SiteLeaf Commands
     module Common

@@ -5,28 +5,28 @@ require 'fileutils'
 require 'open-uri'
 require 'digest/md5'
 
-# Dir['/bin/SiteleafCommands/*.rb'].each { |file| puts file }
-require_relative 'SiteleafCommands/siteleaf_commands'
+require_relative 'commands/commands'
 
+# Select Case for different Siteleaf command
 case ARGV[0]
 when '-v', '--version', 'version'
   puts Siteleaf::VERSION
 when '-h', '--help', 'help'
   puts Help.help
 when 's', 'server'
-  SiteleafCommands.sever_command
+  Commands.sever_command
 when 'auth'
-  SiteleafCommands::Execution::Authenticate.auth true
+  Commands::Execution::Authenticate.auth true
 when 'c', 'config', 'setup'
-  SiteleafCommands.config_command
+  Commands.config_command
 when 'n', 'new'
-  SiteleafCommands.new_command
+  Commands.new_command
 when 'pull'
-  SiteleafCommands.pull_command
+  Commands.pull_command
 when 'push'
-  SiteleafCommands.push_command
+  Commands.push_command
 when 'publish'
-  SiteleafCommands.publish_command
+  Commands.publish_command
 else
   puts "`#{ARGV[0]}` command not found.\n"
   puts Help.help

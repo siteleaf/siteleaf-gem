@@ -1,4 +1,4 @@
-module SiteleafCommands
+module Commands
   module Execution
     # Provides functions for User Authentication
     module Authenticate

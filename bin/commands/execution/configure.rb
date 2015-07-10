@@ -1,4 +1,4 @@
-module SiteleafCommands
+module Commands
   module Execution
   # Provides Configure functions for sitleaf config command
     module Config

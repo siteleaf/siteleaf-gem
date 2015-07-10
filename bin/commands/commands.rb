@@ -1,13 +1,13 @@
-require_relative 'Execution/configure'
-require_relative 'Execution/common'
-require_relative 'Execution/help'
-require_relative 'Execution/pull'
-require_relative 'Execution/push'
-require_relative 'Execution/publish'
-require_relative 'Execution/authenticate'
+require_relative 'execution/configure'
+require_relative 'execution/common'
+require_relative 'execution/help'
+require_relative 'execution/pull'
+require_relative 'execution/push'
+require_relative 'execution/publish'
+require_relative 'execution/authenticate'
 
 # Provides functions for each SiteLeaf Command-line statement
-module SiteleafCommands
+module Commands
   def self.sever_command
     if File.exist?('config.ru')
       port = ARGV[2] if %w(-p --port).include?(ARGV[1]) && ARGV[1]

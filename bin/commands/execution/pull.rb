@@ -1,4 +1,4 @@
-module SiteleafCommands
+module Commands
   module Execution
     # Provides get_theme_assets functions for sitleaf Pull command
     module Pull
