@@ -19,6 +19,9 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'httmultiparty', '>= 0.3.13'
   gem.add_dependency 'rack'
 
+  # Added for RSpec testing
+  gem.add_development_dependency 'rspec'
+
   # For analyzing and code and copmlexity
   gem.add_development_dependency 'rubocop'
 
