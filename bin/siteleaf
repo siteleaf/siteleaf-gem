@@ -24,7 +24,7 @@ module SiteleafCommands
   end
 
   def config_command
-    return unless authenticated?
+    return unless Common.authenticated?
     if !(site = Siteleaf::Site.find_by_domain(ARGV[1])).nil?
       config site
     else
@@ -33,9 +33,9 @@ module SiteleafCommands
   end
 
   def new_command
-    return unless authenticated?
+    return unless Common.authenticated?
     if (site = Siteleaf::Site.create(title: ARGV[1], domain: ARGV[1])) && (!site.error)
-      configure_site(site)
+      Common.configure_site(site)
     else
       puts "Could not create site `#{ARGV[1]}`.\n"
     end
@@ -43,8 +43,8 @@ module SiteleafCommands
 
   def pull_command
     if ARGV[1] == 'theme'
-      return unless authenticated?
-      site_id = site_configured?
+      return unless Common.authenticated?
+      site_id = Common.site_configured?
       return unless site_id
       get_theme_assets(site_id)
     else
@@ -54,8 +54,8 @@ module SiteleafCommands
 
   def push_command
     if ARGV[1] == 'theme'
-      return unless authenticated?
-      site_id = site_configured?
+      return unless Common.authenticated?
+      site_id = Common.site_configured?
       return unless site_id
       put_theme_assets(site_id)
     else
@@ -64,9 +64,9 @@ module SiteleafCommands
   end
 
   def publish_command
-    return unless authenticated?
+    return unless Common.authenticated?
     quiet = %w(-q --quiet).include?(ARGV[1]) && ARGV[1]
-    site_id = site_configured?
+    site_id = Common.site_configured?
     return unless site_id
     publish(site_id, quiet)
   end
