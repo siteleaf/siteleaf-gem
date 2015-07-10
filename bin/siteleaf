@@ -46,7 +46,7 @@ module SiteleafCommands
       return unless Common.authenticated?
       site_id = Common.site_configured?
       return unless site_id
-      get_theme_assets(site_id)
+      Pull.get_theme_assets(site_id)
     else
       puts "`#{ARGV[0]}` command not found.\n"
     end
