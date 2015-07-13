@@ -14,9 +14,9 @@ describe 'Common' do
 
   describe '#self.authenticated?' do
     subject { common.authenticated? }
-    context '' do
-      it '' do
-        # Pending
+    context 'checks if the user is authenticated or not?' do
+      it 'returns true if not authenticated and vice-versa' do
+        expect(common.authenticated?).to be_truthy
       end
     end
   end
@@ -32,8 +32,8 @@ describe 'Common' do
 
   describe '#self.configure_site' do
     subject { common.configure_site }
-    context '' do
-      it '' do
+    context 'must configgure a site' do
+      it 'should configure the site using the site id' do
         # Pending
       end
     end

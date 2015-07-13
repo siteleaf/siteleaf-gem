@@ -62,7 +62,7 @@ describe 'Push' do
     subject { push.get_missing_assets }
     context 'gets the assets that are on siteleaf but do not reside in your local directory' do
       it 'should return an array of assets that are not found in your local project' do
-        # Pending
+        expect(push.get_missing_assets([])).to be_empty
       end
     end
   end
