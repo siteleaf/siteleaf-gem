@@ -15,7 +15,7 @@ describe 'Publish' do
   describe '#self.publish' do
     subject { publish.publish }
     context 'Publishes the site' do
-      it 'shoul publish the site on the internet' do
+      it 'should publish the site on the internet' do
         # Pending
       end
     end

@@ -1,5 +1,7 @@
 require File.expand_path('../../bin/commands/commands.rb', __FILE__)
 Dir['/bin/commands/execution/*.rb'].each { |file| require file }
+require File.expand_path('../../lib/siteleaf.rb', __FILE__)
+Dir['/lib/*.rb'].each { |file| require file }
 
 # code for silencing outputs by functions
 # RSpec.configure do |config|
