@@ -5,8 +5,8 @@ describe 'Authenticate' do
 
   describe '#self.authenticate' do
     subject { authenticate.authenticate }
-    context '' do
-      it '' do
+    context 'Takes in user iput for key and Secret and validates it' do
+      it 'should authenticate the user with the email and password provided by the user' do
         # Pending
       end
     end
@@ -32,8 +32,8 @@ describe 'Authenticate' do
 
   describe '#self.authenticate_true' do
     subject { authenticate.authenticate_true }
-    context '' do
-      it '' do
+    context 'if the user has already been authenticated then it should return true' do
+      it 'should return true if the user is has already been authenticated' do
         # Pending
       end
     end
@@ -41,8 +41,8 @@ describe 'Authenticate' do
 
   describe '#self.auth' do
     subject { authenticate.auth }
-    context '' do
-      it '' do
+    context 'Facilitates the enitire Authentication Process' do
+      it 'Should authenticate the user using the provided key and secret' do
         # Pending
       end
     end
