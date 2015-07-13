@@ -4,12 +4,12 @@ require File.expand_path('../../lib/siteleaf.rb', __FILE__)
 Dir['/lib/*.rb'].each { |file| require file }
 
 # code for silencing outputs by functions
-# RSpec.configure do |config|
-#   original_stderr = $stderr
-#   original_stdout = $stdout
-#   config.before(:all) do
-#     # Redirect stderr and stdout to NULL, Hence no prints or puts
-#     $stderr = File.open(File::NULL, "w")
-#     $stdout = File.open(File::NULL, "w")
-#   end
-# end
+RSpec.configure do |config|
+  original_stderr = $stderr
+  original_stdout = $stdout
+  config.before(:all) do
+    # Redirect stderr and stdout to NULL, Hence no prints or puts
+    $stderr = File.open(File::NULL, "w")
+    $stdout = File.open(File::NULL, "w")
+  end
+end
