@@ -19,6 +19,8 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'httmultiparty', '>= 0.3.13'
   gem.add_dependency 'rack'
 
+  # Added Figs for ENV Vars for RSpec testing
+  gem.add_development_dependency 'figs'
   # Added for RSpec testing
   gem.add_development_dependency 'rspec'
   # To record cassettes for offline testing
