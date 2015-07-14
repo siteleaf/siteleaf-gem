@@ -1,6 +1,12 @@
 Siteleaf Gem
 ============
 
+[![Build Status](https://travis-ci.org/NYULibraries/siteleaf-gem.svg)](https://travis-ci.org/NYULibraries/siteleaf-gem)
+[![Dependency Status](https://gemnasium.com/NYULibraries/siteleaf-gem.svg)](https://gemnasium.com/NYULibraries/siteleaf-gem)
+[![Code Climate](https://codeclimate.com/github/NYULibraries/siteleaf-gem/badges/gpa.svg)](https://codeclimate.com/github/NYULibraries/siteleaf-gem)
+[![Test Coverage](https://codeclimate.com/github/NYULibraries/siteleaf-gem/badges/coverage.svg)](https://codeclimate.com/github/NYULibraries/siteleaf-gem/coverage)
+[![Issues](http://img.shields.io/github/issues/NYULibraries/lsiteleaf-gem.svg?style=flat-square)](http://github.com/NYULibraries/siteleaf-gem/issues)
+
 - [Installation](#installation)
 - [Testing sites locally](#testing-sites-locally)
 - [Using this gem in your application](#using-this-gem-in-your-application)
@@ -42,7 +48,7 @@ Your site should now be accessible at `http://yoursite.dev`.
 **If you don't want to install Pow, local sites can also be manually run:**
 
     siteleaf server
-  
+
 In this case, your local site can be accessed at `http://localhost:9292`.
 
 **Lastly...**
@@ -62,17 +68,17 @@ To download your theme (or the default theme for new sites) from Siteleaf, run t
 To upload your theme to Siteleaf, run the following command:
 
     siteleaf push theme
-    
+
 **Publish your site:**
 
 To publish your site changes to your hosting provider, run the following command:
 
     siteleaf publish
-    
+
 **Switch Siteleaf users or re-authenticate:**
 
     siteleaf auth
-    
+
 **For a full list of commands, run:**
 
     siteleaf help
@@ -80,7 +86,7 @@ To publish your site changes to your hosting provider, run the following command
 
 Using this gem in your application
 ----------------------------------
-    
+
 To use this gem in your application, add the following to your Gemfile:
 
     gem 'siteleaf', :git => 'git://github.com/siteleaf/siteleaf-gem.git'
@@ -154,8 +160,8 @@ post.save
 
 # upload asset to post (use site_id, page_id, or theme_id to upload to Site, Page, or Theme instead)
 asset = Siteleaf::Asset.create({
-  :post_id  => post.id, 
-  :file     => File.open("~/image.png"), 
+  :post_id  => post.id,
+  :file     => File.open("~/image.png"),
   :filename => "image.png"
 })
 

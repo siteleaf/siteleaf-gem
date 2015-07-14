@@ -21,7 +21,7 @@ describe 'Asset' do
       let(:site_id) { 'site_id' }
       it { should eql 'sites/site_id/assets' }
     end
-    context 'when theme_id is present' do
+    context 'when theme_id and site_id is present' do
       let(:theme_id) { 'theme_id' }
       let(:site_id) { 'site_id' }
       it { should eql 'sites/site_id/theme/assets' }
