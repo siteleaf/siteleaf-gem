@@ -5,10 +5,8 @@ describe 'version' do
 
   describe '#version' do
     subject { version }
-    context 'Validate Siteleaf Version' do
-      it 'should not be nil' do
-        expect(version).not_to be_nil
-      end
+    context 'Gives version of Siteleaf-Gem' do
+      it { should_not eql nil }
     end
   end
 end

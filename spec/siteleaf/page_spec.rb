@@ -38,15 +38,15 @@ describe 'Page' do
   end
 
   describe '#assets', vcr: { cassette_name: 'page_assets', record: :none } do
-  subject { page.assets }
-  context 'when id is present and page has assets' do
-    let(:id) { ENV['PAGE_ID'] }
-    it 'should return an array of assets' do
-      page.assets.each do |asset|
-        expect(asset).to be_instance_of(Siteleaf::Asset)
+    subject { page.assets }
+    context 'when id is present and page has assets' do
+      let(:id) { ENV['PAGE_ID'] }
+      it 'should return an array of assets' do
+        page.assets.each do |asset|
+          expect(asset).to be_instance_of(Siteleaf::Asset)
+        end
       end
     end
-  end
   end
 
   describe '#posts', vcr: { cassette_name: 'page_posts', record: :none } do
