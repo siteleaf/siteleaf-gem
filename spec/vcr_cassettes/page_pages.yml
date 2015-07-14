@@ -33,7 +33,7 @@ http_interactions:
       - keep-alive
     body:
       encoding: UTF-8
-      string: '{"id":"","title":"","slug":"","url":"","body":"","visibility":"","created_at":"","updated_at":"","published_at":"","user_id":"","site_id":"","parent_id":null,"pages":[{"id":"","title":"Subpage-Test","slug":"","url":"","body":"","visibility":"","created_at":"","updated_at":"","published_at":"","user_id":"","site_id":"","parent_id":"","meta":[]}],"meta":[{"id":"","key":"","value":""}]}'
+      string: '{"id":"","title":"","slug":"","url":"","body":"","visibility":"","created_at":"","updated_at":"","published_at":"","user_id":"","site_id":"","parent_id":null,"pages":[{"id":"","title":"","slug":"","url":"","body":"","visibility":"","created_at":"","updated_at":"","published_at":"","user_id":"","site_id":"","parent_id":"","meta":[]}],"meta":[{"id":"","key":"","value":""}]}'
     http_version:
   recorded_at: Tue, 14 Jul 2015 18:38:50 GMT
 recorded_with: VCR 2.9.3

@@ -1,5 +1,5 @@
 require File.expand_path('../../lib/siteleaf.rb', __FILE__)
-Dir["/lib/*.rb"].each { |file| require file }
+Dir['/lib/*.rb'].each { |file| require file }
 require 'rspec'
 require 'vcr'
 require 'webmock/rspec'
@@ -8,25 +8,13 @@ require 'figs'
 Figs.load
 SimpleCov.start
 
-RSpec.configure do |c|
-  if ENV['API_KEY'].nil?
-    ENV['API_KEY'] ||= 'KEY'
-  end
-  if ENV['API_SECRET'].nil?
-    ENV['API_SECRET'] ||= 'KEY'
-  end
-  if ENV['SITELEAF_ID'].nil?
-    ENV['SITELEAF_ID'] ||= 'SITE_ID'
-  end
-  if ENV['PAGE_ID'].nil?
-    ENV['PAGE_ID'] ||= 'PAGE_ID'
-  end
-  if ENV['POST_ID'].nil?
-    ENV['POST_ID'] ||= 'POST_ID'
-  end
-  if ENV['SUBPAGE_ID'].nil?
-    ENV['SUBPAGE_ID'] ||= 'SUBPAGE_ID'
-  end
+RSpec.configure do |_c|
+  ENV['API_KEY'] ||= 'KEY' if  ENV['API_KEY'].nil?
+  ENV['API_SECRET'] ||= 'SECRET' if ENV['API_SECRET'].nil?
+  ENV['SITELEAF_ID'] ||= 'SITE_ID' if ENV['SITELEAF_ID'].nil?
+  ENV['PAGE_ID'] ||= 'PAGE_ID' if ENV['PAGE_ID'].nil?
+  ENV['POST_ID'] ||= 'POST_ID' if ENV['POST_ID'].nil?
+  ENV['SUBPAGE_ID'] ||= 'SUBPAGE_ID' if ENV['SUBPAGE_ID'].nil?
 end
 
 VCR.configure do |config|

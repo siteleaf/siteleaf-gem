@@ -1,31 +1,42 @@
 require File.expand_path('../../spec_helper.rb', __FILE__)
 
 describe 'Post' do
-  let(:post) { Siteleaf::Post.new }
+  let(:id) { nil }
+  let(:parent_id) { nil }
+  let(:attributes) do
+    {
+      id: id,
+      parent_id: parent_id
+    }
+  end
+  let(:post) { Siteleaf::Post.new(attributes) }
 
   describe '#create_endpoint' do
     subject { post.create_endpoint }
-    context 'post API URL Postfix' do
-      it 'should end with post' do
-        expect(post.create_endpoint).to end_with('posts')
-      end
+    context 'when parent_id is present' do
+      let(:parent_id) { 'parent_id' }
+      it { should eql 'pages/parent_id/posts' }
+    end
+    context 'when parent_id is nil' do
+      it { should eql 'pages//posts' }
     end
   end
 
   describe '#parent' do
-    subject { post.site }
-    context 'Get the page ID to which that post belongs to' do
-      it 'should return parent page id' do
-        expect(post.site).to be_nil
-      end
+    subject { post.parent }
+    context 'Must always return a parent Object' do
+      it { should be_an_instance_of Siteleaf::Page}
     end
   end
 
-  describe '#assets', vcr: { cassette_name: 'post_assets', record: :none } do
+  describe '#assets' , vcr: { cassette_name: 'post_assets', record: :none } do
     subject { post.assets }
-    context 'Get post assets' do
-      it 'should return an array of post assets' do
-        expect(post.assets).to be_empty
+    context 'when id is present and post has assets' do
+      let(:id) { ENV['POST_ID'] }
+      it 'should return an array of assets' do
+        post.assets.each do |asset|
+          expect(asset).to be_instance_of(Siteleaf::Asset)
+        end
       end
     end
   end

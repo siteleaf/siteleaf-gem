@@ -28,12 +28,12 @@ describe 'Theme' do
     end
   end
 
-  # describe '#assets_by_site_id'  do
-  #   subject { theme.assets_by_site_id('site_id') }
-  #   context '' do
-  #     it { should be_an_instance_of Siteleaf::Asset }
-  #   end
-  # end
+  describe '#assets_by_site_id'  do
+    subject { theme.assets_by_site_id('site_id') }
+    context '' do
+      # it { should be_an_instance_of Siteleaf::Asset }
+    end
+  end
 
   describe '#site' do
     subject { theme.new.site }

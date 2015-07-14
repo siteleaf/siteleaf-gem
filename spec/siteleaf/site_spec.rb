@@ -1,31 +1,42 @@
 require File.expand_path('../../spec_helper.rb', __FILE__)
 
 describe 'Site' do
-  let(:site) { Siteleaf::Site.new }
+
+  let(:id) { nil }
+  let(:attributes) do
+    {
+      id: id
+    }
+  end
+  let(:site) { Siteleaf::Site.new(attributes) }
 
   describe '#theme' do
     subject { site.theme }
-    context ' Theme for the site' do
-      it 'should return the entire theme for the site' do
-        expect(site.theme).to be_instance_of(Siteleaf::Theme)
-      end
+    context 'Always returns theme for the site' do
+      it { should be_an_instance_of Siteleaf::Theme }
     end
   end
 
   describe '#assets', vcr: { cassette_name: 'site_assets', record: :none } do
     subject { site.assets }
-    context 'Get site assets' do
-      it 'should return an array of site assets' do
-        expect(site.assets).to be_empty
+    context 'when id is present and site has assets' do
+      let(:id) { ENV['SITELEAF_ID'] }
+      it 'should return an array of assets' do
+        site.assets.each do |asset|
+          expect(asset).to be_instance_of(Siteleaf::Asset)
+        end
       end
     end
   end
 
   describe '#pages', vcr: { cassette_name: 'site_pages', record: :none } do
     subject { site.pages }
-    context 'Get all pages in site using the site_id' do
-      it 'should return a page or nil if no page declared' do
-        expect(site.pages[0]).to be_instance_of(Siteleaf::Page)
+    context 'when id is present' do
+      let(:id) { ENV['SITELEAF_ID'] }
+      it 'should return an array of pages' do
+        site.assets.each do |asset|
+          expect(asset).to be_instance_of(Siteleaf::Asset)
+        end
       end
     end
   end
