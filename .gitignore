@@ -19,5 +19,5 @@ tmp
 .DS_Store
 # Ignore application configuration
 application.yml
-Figsfile
 Siteleaf_ID.yml
+coverage

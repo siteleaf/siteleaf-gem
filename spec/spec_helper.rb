@@ -3,8 +3,10 @@ Dir["/lib/*.rb"].each { |file| require file }
 require 'rspec'
 require 'vcr'
 require 'webmock/rspec'
+require 'simplecov'
 require 'Figs'
 Figs.load
+SimpleCov.start
 
 RSpec.configure do |c|
   if ENV['API_KEY'].nil?

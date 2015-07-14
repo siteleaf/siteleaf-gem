@@ -27,6 +27,8 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'vcr'
   # To mock a fake web for HTTP requests
   gem.add_development_dependency 'webmock'
+  # For code coverage analysis of RSpec
+  gem.add_development_dependency 'simplecov'
 
   gem.files         = `git ls-files`.split($/)
   gem.files         += Dir.glob("lib/**/*.rb")
