@@ -17,3 +17,7 @@ test/version_tmp
 tmp
 .ruby-version
 .DS_Store
+# Ignore application configuration
+application.yml
+Figsfile
+Siteleaf_ID.yml
