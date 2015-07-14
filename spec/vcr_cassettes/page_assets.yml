@@ -2,7 +2,7 @@
 http_interactions:
 - request:
     method: get
-    uri: https://:@api.siteleaf.com/v1/pages//assets
+    uri: https://KEY:SECRET@api.siteleaf.com/v1/pages/PAGE_ID/assets
     body:
       encoding: US-ASCII
       string: ''
@@ -21,19 +21,18 @@ http_interactions:
       Content-Type:
       - application/json; charset=UTF-8
       Date:
-      - Wed, 01 Jul 2015 14:05:41 GMT
+      - Tue, 14 Jul 2015 18:27:33 GMT
       Server:
       - nginx/1.6.2
       Set-Cookie:
-      - rack.session=BAh7B0kiD3Nlc3Npb25faWQGOgZFVEkiRWIyNTk1YmJhZGJkMGIzNjk3YzE2%0AMTBhYmYwOWE1MWI0ODc5OWE5MjYwMzQwOWRiNjJjYzRmZTZjMjc5ZTI0ZTkG%0AOwBGSSIYd2FyZGVuLnVzZXIuYXBpLmtleQY7AFRVOhNCU09OOjpPYmplY3RJ%0AZCIRVL8I%2BV3eIqI4AAY0%0A--ef0f40f10834d6b7510f72f953c05e802452c831;
-        domain=.siteleaf.com; path=/; expires=Fri, 31 Jul 2015 14:05:41 -0000
+      - rack.session=BAh7B0kiD3Nlc3Npb25faWQGOgZFVEkiRWMyNjkzZDlmYjE2MWQzYTk5OWYy%0AZDI4YjRiN2NhNTgxNmQ2ZmFiYzc3NDQ3MzlkOGYxNWI2Njc1MGI1ZjVhYmIG%0AOwBGSSIYd2FyZGVuLnVzZXIuYXBpLmtleQY7AFRVOhNCU09OOjpPYmplY3RJ%0AZCIRVL8I%2BV3eIqI4AAY0%0A--05c68636b451989f980f427d6272aa9add784223;
+        domain=.siteleaf.com; path=/; expires=Thu, 13 Aug 2015 18:27:33 -0000
       Content-Length:
-      - '2'
+      - '799'
       Connection:
       - keep-alive
     body:
       encoding: UTF-8
-      string: "[]"
+      string: '[{"id":"","filename":"","url":"","permalink":"","file":{"url":"","thumbnail":{"url":null}},"content_type":"","filesize":0,"checksum":"","created_at":"","updated_at":"","meta":[{"id":"","key":"","value":""}]}]'
     http_version:
-  recorded_at: Wed, 01 Jul 2015 14:05:47 GMT
-recorded_with: VCR 2.9.3
+  recorded_at: Tue, 14 Jul 2015 18:27:33 GMT
