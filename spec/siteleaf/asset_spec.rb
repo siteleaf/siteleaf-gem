@@ -1,13 +1,16 @@
 require File.expand_path('../../spec_helper.rb', __FILE__)
 
 describe 'Asset' do
-  let(:asset) { Siteleaf::Asset.new }
+  let(:asset_site_id) { Siteleaf::Asset.new({ site_id: '1' }) }
+  let(:asset_theme_id) { Siteleaf::Asset.new({ theme_id: '1' }) }
+  let(:asset_post_id) { Siteleaf::Asset.new({ post_id: '1' }) }
+  let(:asset_page_id) { Siteleaf::Asset.new({ site_id: '1' }) }
 
   describe '#create_endpoint' do
-    subject { asset.create_endpoint }
-    context 'Asset API URL Postfix' do
-      it 'should end with assets' do
-        expect(asset.create_endpoint).to end_with('assets')
+    subject { asset_site_id.create_endpoint }
+    context 'Must return the HTTP URL Endpoint to retrieve site' do
+      it 'should return sites/{site_id}/assets' do
+        expect(asset_site_id.create_endpoint).to eql('sites/1/assets')
       end
     end
   end
