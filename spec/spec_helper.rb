@@ -4,7 +4,7 @@ require 'rspec'
 require 'vcr'
 require 'webmock/rspec'
 require 'simplecov'
-require 'Figs'
+require 'figs'
 Figs.load
 SimpleCov.start
 

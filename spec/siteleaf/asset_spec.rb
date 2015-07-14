@@ -19,20 +19,20 @@ describe 'Asset' do
     subject { asset.create_endpoint }
     context 'when site_id is present' do
       let(:site_id) { 'site_id' }
-      it { should eql "sites/site_id/assets" }
+      it { should eql 'sites/site_id/assets' }
     end
     context 'when theme_id is present' do
       let(:theme_id) { 'theme_id' }
       let(:site_id) { 'site_id' }
-      it { should eql "sites/site_id/theme/assets" }
+      it { should eql 'sites/site_id/theme/assets' }
     end
     context 'when post_id is present' do
       let(:post_id) { 'post_id' }
-      it { should eql "posts/post_id/assets" }
+      it { should eql 'posts/post_id/assets' }
     end
     context 'when page_id is present' do
       let(:page_id) { 'page_id' }
-      it { should eql "pages/page_id/assets" }
+      it { should eql 'pages/page_id/assets' }
     end
     context 'when page_id, post_id, and theme_id are all nil' do
       it { should eql 'sites//assets' }
