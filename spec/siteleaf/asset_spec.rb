@@ -1,71 +1,84 @@
 require File.expand_path('../../spec_helper.rb', __FILE__)
 
 describe 'Asset' do
-  let(:asset_site_id) { Siteleaf::Asset.new(site_id: ENV['SITELEAF_ID']) }
-  let(:asset_theme_id) { Siteleaf::Asset.new(site_id: ENV['SITELEAF_ID'], theme_id: ENV['SITELEAF_ID']) }
-  let(:asset_page_id) { Siteleaf::Asset.new(page_id: ENV['PAGE_ID']) }
-  let(:asset_post_id) { Siteleaf::Asset.new(post_id: ENV['POST_ID']) }
-  let(:asset) { Siteleaf::Asset.new }
+  let(:post_id) { nil }
+  let(:theme_id) { nil }
+  let(:page_id) { nil }
+  let(:site_id) { nil }
+  let(:attributes) do
+    {
+      post_id: post_id,
+      theme_id: theme_id,
+      page_id: page_id,
+      site_id: site_id
+    }
+  end
+  let(:asset) { Siteleaf::Asset.new(attributes) }
 
   describe '#create_endpoint' do
-    context 'should return HTTP URL Endpoint "sites/{site_id}/assets" if site_id is provided' do
-      subject { asset_site_id.create_endpoint }
-      it { should eql "sites/#{ENV['SITELEAF_ID']}/assets" }
+    subject { asset.create_endpoint }
+    context 'when site_id is present' do
+      let(:site_id) { 'site_id' }
+      it { should eql "sites/site_id/assets" }
     end
-    context 'should return HTTP URL Endpoint "sites/{theme_id}/theme/assets" if theme_id is provided' do
-      subject { asset_theme_id.create_endpoint }
-      it { should eql "sites/#{ENV['SITELEAF_ID']}/theme/assets" }
+    context 'when theme_id is present' do
+      let(:theme_id) { 'theme_id' }
+      let(:site_id) { 'site_id' }
+      it { should eql "sites/site_id/theme/assets" }
     end
-    context 'should return HTTP URL Endpoint "pages/{page_id}/assets" if page_id is provided' do
-      subject { asset_page_id.create_endpoint }
-      it { should eql "pages/#{ENV['PAGE_ID']}/assets" }
+    context 'when post_id is present' do
+      let(:post_id) { 'post_id' }
+      it { should eql "posts/post_id/assets" }
     end
-    context 'should return HTTP URL Endpoint "posts/{post_id}/assets" if post_id is provided' do
-      subject { asset_post_id.create_endpoint }
-      it { should eql "posts/#{ENV['POST_ID']}/assets" }
+    context 'when page_id is present' do
+      let(:page_id) { 'page_id' }
+      it { should eql "pages/page_id/assets" }
+    end
+    context 'when page_id, post_id, and theme_id are all nil' do
+      it { should eql 'sites//assets' }
     end
   end
 
   describe '#post' do
-    context 'Should return post if post_id is provided' do
-      subject { asset_post_id.post }
+    subject { asset.post }
+    context 'when post_id is present' do
+      let(:post_id) { 'post_id' }
       it { should be_an_instance_of Siteleaf::Post }
     end
-    context 'Should return nil if post_id is not provided' do
-      subject { asset.post }
+    context 'when post_id is nil' do
       it { should eql nil }
     end
   end
 
   describe '#page' do
-    context 'Should return page if page_id is provided' do
-      subject { asset_page_id.page }
+    subject { asset.page }
+    context 'when page_id is present' do
+      let(:page_id) { 'page_id' }
       it { should be_an_instance_of Siteleaf::Page }
     end
-    context 'Should return nil if page_id is not provided' do
-      subject { asset.page }
+    context 'when page_id is nil' do
       it { should eql nil }
     end
   end
 
   describe '#theme' do
-    context 'Should return theme if theme_id is provided' do
-      subject { asset_theme_id.theme }
+    subject { asset.theme }
+    context 'when theme_id is present' do
+      let(:theme_id) { 'theme_id' }
       it { should be_an_instance_of Siteleaf::Theme }
     end
-    context 'Should return nil if theme_id is not provided' do
-      subject { asset.theme }
+    context 'when theme_id is nil' do
       it { should eql nil }
     end
   end
 
-  describe '#site'do
-    context 'Should return site if site_id is provided' do
-      subject { asset_site_id.site }
+  describe '#site' do
+    subject { asset.site }
+    context 'when site_id is present' do
+      let(:site_id) { 'site_id' }
       it { should be_an_instance_of Siteleaf::Site }
     end
-    context 'Should return nil if site_id is not provided' do
-      subject { asset.site }
+    context 'when site_id is nil' do
       it { should eql nil }
     end
   end
