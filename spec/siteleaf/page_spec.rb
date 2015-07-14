@@ -1,13 +1,11 @@
 require File.expand_path('../../spec_helper.rb', __FILE__)
 
 describe 'Page' do
-  # let(:post_id) { nil }
   let(:id) { nil }
   let(:parent_id) { nil }
   let(:site_id) { nil }
   let(:attributes) do
     {
-      # post_id: post_id,
       id: id,
       parent_id: parent_id,
       site_id: site_id
