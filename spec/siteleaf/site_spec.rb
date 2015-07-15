@@ -2,16 +2,12 @@ require File.expand_path('../../spec_helper.rb', __FILE__)
 
 describe 'Site' do
   let(:id) { nil }
-  let(:attributes) do
-    {
-      id: id
-    }
-  end
+  let(:attributes) { { id: id } }
   let(:site) { Siteleaf::Site.new(attributes) }
 
   describe '#theme' do
     subject { site.theme }
-    context 'Always returns theme for the site' do
+    context 'Always returns an Object of Theme for the site or a new Theme Object if no site defined' do
       it { should be_an_instance_of Siteleaf::Theme }
     end
   end

@@ -24,10 +24,14 @@ describe 'Theme' do
     end
   end
 
-  describe '#assets_by_site_id'  do
-    subject { theme.assets_by_site_id('site_id') }
-    context '' do
-      # it { should be_an_instance_of Siteleaf::Asset }
+  describe '#assets_by_site_id', vcr: { cassette_name: 'theme_assets_by_site_id', record: :none }  do
+    subject { theme.assets_by_site_id(ENV['SITELEAF_ID']) }
+    context 'when site_id is passed as parameter' do
+      it 'should return an array of assets' do
+        theme.assets_by_site_id(ENV['SITELEAF_ID']).each do |asset|
+          expect(asset).to be_instance_of(Siteleaf::Asset)
+        end
+      end
     end
   end
 
