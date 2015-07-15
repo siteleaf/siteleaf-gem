@@ -6,7 +6,7 @@ describe 'Theme' do
   let(:theme) { Siteleaf::Theme }
 
   describe '#self.find_by_site_id' do
-    subject { theme.find_by_site_id('site_id') }
+    subject { theme.find_by_site_id('SITE_ID') }
     context 'when site_id parameter is passed' do
       it { should be_an_instance_of Siteleaf::Theme }
     end

@@ -14,8 +14,8 @@ describe 'Post' do
   describe '#create_endpoint' do
     subject { post.create_endpoint }
     context 'when parent_id is present' do
-      let(:parent_id) { 'parent_id' }
-      it { should eql 'pages/parent_id/posts' }
+      let(:parent_id) { ENV['PARENT_ID'] }
+      it { should eql 'pages/PARENT_ID/posts' }
     end
     context 'when parent_id is nil' do
       it { should eql 'pages//posts' }

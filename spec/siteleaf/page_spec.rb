@@ -16,8 +16,8 @@ describe 'Page' do
   describe '#create_endpoint' do
     subject { page.create_endpoint }
     context 'when site_id is present' do
-      let(:site_id) { 'site_id' }
-      it { should eql 'sites/site_id/pages' }
+      let(:site_id) { ENV['SITELEAF_ID'] }
+      it { should eql 'sites/SITE_ID/pages' }
     end
     context 'when site_id is nil' do
       it { should eql 'sites//pages' }
@@ -27,7 +27,7 @@ describe 'Page' do
   describe '#site' do
     subject { page.site }
     context 'when site_id is present' do
-      let(:site_id) { 'site_id' }
+      let(:site_id) { ENV['SITELEAF_ID'] }
       it { should be_an_instance_of Siteleaf::Site }
     end
     context 'when site_id is nil' do
@@ -70,7 +70,7 @@ describe 'Page' do
   describe '#page' do
     subject { page.page }
     context 'when parent_id is present' do
-      let(:parent_id) { 'parent_id' }
+      let(:parent_id) { ENV['PARENT_ID'] }
       it { should be_an_instance_of Siteleaf::Page }
     end
     context 'when parent_id is nil' do
