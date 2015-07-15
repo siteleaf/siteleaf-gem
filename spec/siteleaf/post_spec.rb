@@ -25,11 +25,11 @@ describe 'Post' do
   describe '#parent' do
     subject { post.parent }
     context 'Must always return a parent Object' do
-      it { should be_an_instance_of Siteleaf::Page}
+      it { should be_an_instance_of Siteleaf::Page }
     end
   end
 
-  describe '#assets' , vcr: { cassette_name: 'post_assets', record: :none } do
+  describe '#assets', vcr: { cassette_name: 'post_assets', record: :none } do
     subject { post.assets }
     context 'when id is present and post has assets' do
       let(:id) { ENV['POST_ID'] }
