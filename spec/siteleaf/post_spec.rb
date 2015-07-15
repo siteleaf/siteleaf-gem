@@ -31,7 +31,7 @@ describe 'Post' do
 
   describe '#assets', vcr: { cassette_name: 'post_assets', record: :none } do
     subject { post.assets }
-    context 'when id is present and post has assets' do
+    context 'when id is present' do
       let(:id) { ENV['POST_ID'] }
       it 'should return an array of assets' do
         post.assets.each do |asset|

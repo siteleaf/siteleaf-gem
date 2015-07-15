@@ -2,11 +2,7 @@ require File.expand_path('../../spec_helper.rb', __FILE__)
 
 describe 'Theme' do
   let(:site_id) { nil }
-  let(:attributes) do
-    {
-      site_id: site_id
-    }
-  end
+  let(:attributes) { { site_id: site_id } }
   let(:theme) { Siteleaf::Theme }
 
   describe '#self.find_by_site_id' do
@@ -18,7 +14,7 @@ describe 'Theme' do
 
   describe '#assets', vcr: { cassette_name: 'theme_assets', record: :none } do
     subject { theme.new(attributes).assets }
-    context 'when site_id is present and theme has assets' do
+    context 'when site_id is present' do
       let(:site_id) { ENV['SITELEAF_ID'] }
       it 'should return an array of assets' do
         theme.new(attributes).assets.each do |asset|
@@ -37,7 +33,7 @@ describe 'Theme' do
 
   describe '#site' do
     subject { theme.new.site }
-    context 'will always return site object' do
+    context 'will always return Site object' do
       it { should be_an_instance_of Siteleaf::Site }
     end
   end
