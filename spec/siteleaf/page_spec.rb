@@ -37,7 +37,7 @@ describe 'Page' do
 
   describe '#assets', vcr: { cassette_name: 'page_assets', record: :none } do
     subject { page.assets }
-    context 'when id is present and page has assets' do
+    context 'when id is present' do
       let(:id) { ENV['PAGE_ID'] }
       it 'should return an array of assets' do
         page.assets.each do |asset|
@@ -49,7 +49,7 @@ describe 'Page' do
 
   describe '#posts', vcr: { cassette_name: 'page_posts', record: :none } do
     subject { page.posts }
-    context 'when id is present and page has posts' do
+    context 'when id is present' do
       let(:id) { ENV['PAGE_ID'] }
       it 'should return an array of posts' do
         page.posts.each do |post|
@@ -60,14 +60,10 @@ describe 'Page' do
   end
 
   describe '#pages', vcr: { cassette_name: 'page_pages', record: :none } do
-    subject { page.pages }
-    context 'when id is present and page has subpages' do
+    subject { page.pages[0] }
+    context 'when id is present' do
       let(:id) { ENV['PAGE_ID'] }
-      it 'should return an array of pages' do
-        page.pages.each do |page|
-          expect(page).to be_instance_of(Siteleaf::Page)
-        end
-      end
+      it { should be_an_instance_of Siteleaf::Page }
     end
   end
 
