@@ -13,6 +13,7 @@ require 'siteleaf/site'
 require 'siteleaf/theme'
 require 'siteleaf/user'
 require 'rbconfig'
+
 module Siteleaf
 
   @api_base = 'https://api.siteleaf.com/v1'
