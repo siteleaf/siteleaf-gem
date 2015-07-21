@@ -27,6 +27,8 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'simplecov'
   # For developers to adhere to codings standards
   gem.add_development_dependency 'rubocop'
+  # For rake tasks
+  gem.add_development_dependency 'rake'
 
   gem.files         = `git ls-files`.split($/)
   gem.files         += Dir.glob("lib/**/*.rb")
