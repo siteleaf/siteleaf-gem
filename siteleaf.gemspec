@@ -12,12 +12,15 @@ Gem::Specification.new do |gem|
   gem.description   = %q{A Ruby interface and command line utility for the Siteleaf API.}
   gem.summary       = "Siteleaf Ruby interface"
   gem.homepage      = "http://siteleaf.com"
-  
+
   gem.required_ruby_version = '>= 1.9.3'
-  
+
   gem.add_dependency 'httparty', '>= 0.13.3'
   gem.add_dependency 'httmultiparty', '>= 0.3.13'
   gem.add_dependency 'rack'
+
+  # Added for Environment Variable support especially for user authentication
+  gem.add_development_dependency 'figs'
 
   gem.files         = `git ls-files`.split($/)
   gem.files         += Dir.glob("lib/**/*.rb")
