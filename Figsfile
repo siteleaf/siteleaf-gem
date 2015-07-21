@@ -1,4 +1,4 @@
 --- !ruby/object:Figs::Figsfile
 locations:
-- application.yml
+- Siteleaf_ID.yml
 method: path
