@@ -19,5 +19,4 @@ tmp
 .DS_Store
 # Ignore application configuration
 application.yml
-Siteleaf_ID.yml
 coverage

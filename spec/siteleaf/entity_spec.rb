@@ -60,35 +60,65 @@ describe 'Entity' do
     end
   end
 
-  # describe '#self.create' do
-  #   context '' do
-  #     it '' do
-  #       # puts page.create
-  #     end
-  #     # pending
-  #   end
-  # end
+  describe '#self.create' do
+    subject(:post_create) { post.create }
+    subject(:page_create) { page.create }
+    subject(:asset_create) { asset.create }
+    subject(:user_create) { user.create }
+    subject(:site_create) { site.create }
+    it 'returns a Siteleaf object of that instance if parameter is passed' do
+      expect(post_create).to be_an_instance_of Siteleaf::Post
+      expect(page_create).to be_an_instance_of Siteleaf::Page
+      expect(asset_create).to be_an_instance_of Siteleaf::Asset
+      expect(user_create).to be_an_instance_of Siteleaf::User
+      expect(site_create).to be_an_instance_of Siteleaf::Site
+    end
+  end
 
-  # describe '#save' do
-  #   subject { entity.save }
-  #   context '' do
-  #     # pending
-  #   end
-  # end
+  describe '#save' do
+    subject(:post_save) { post.new(attributes).save }
+    subject(:page_save) { page.new(attributes).save }
+    subject(:asset_save) { asset.new(attributes).save }
+    subject(:user_save) { user.new(attributes).save }
+    subject(:site_save) { site.new(attributes).save }
+    it '' do
+      expect(post_save).to be_an_instance_of Siteleaf::Post
+      expect(page_save).to be_an_instance_of Siteleaf::Page
+      expect(asset_save).to be_an_instance_of Siteleaf::Asset
+      expect(user_save).to be_an_instance_of Siteleaf::User
+      expect(site_save).to be_an_instance_of Siteleaf::Site
+    end
+  end
 
-  # describe '#self.delete' do
-  #   subject { entity.save }
-  #   context '' do
-  #     # pending
-  #   end
-  # end
+  describe '#self.delete' do
+    subject(:post_delete) { post.delete(ENV['POST_ID']) }
+    subject(:page_delete) { page.delete(ENV['PAGE_ID']) }
+    subject(:asset_delete) { asset.delete(ENV['ASSET_ID']) }
+    subject(:user_delete) { user.delete(ENV['USER_ID']) }
+    subject(:site_delete) { site.delete(ENV['SITE_ID']) }
+    it '' do
+      expect(post_delete).to eql 'error' => 'Not found!'
+      expect(page_delete).to eql 'error' => 'Not found!'
+      expect(asset_delete).to eql 'error' => 'Not found!'
+      expect(user_delete).to eql 'error' => 'Not found!'
+      expect(site_delete).to eql 'error' => 'Not found!'
+    end
+  end
 
-  # describe '#delete' do
-  #   subject { entity.save }
-  #   context '' do
-  #     # pending
-  #   end
-  # end
+  describe '#delete' do
+    subject(:post_del) { post.new(attributes).delete }
+    subject(:page_del) { page.new(attributes).delete }
+    subject(:asset_del) { asset.new(attributes).delete }
+    subject(:user_del) { user.new(attributes).delete }
+    subject(:site_del) { site.new(attributes).delete }
+    it '' do
+      expect(post_del).to eql 'error' => 'Not found!'
+      expect(page_del).to eql 'error' => 'Not found!'
+      expect(asset_del).to eql 'error' => 'Not found!'
+      expect(user_del).to eql 'error' => 'Not found!'
+      expect(site_del).to eql 'error' => 'Not found!'
+    end
+  end
 
   describe '#attributes' do
     subject { entity.new.attributes }
