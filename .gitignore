@@ -18,4 +18,3 @@ tmp
 .ruby-version
 .DS_Store
 # Ignore application configuration
-Siteleaf_ID.yml
