@@ -27,6 +27,8 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'webmock'
   # For code coverage analysis of RSpec
   gem.add_development_dependency 'simplecov'
+  # For developers to adhere to codings standards
+  gem.add_development_dependency 'rubocop'
 
   gem.files         = `git ls-files`.split($/)
   gem.files         += Dir.glob("lib/**/*.rb")
