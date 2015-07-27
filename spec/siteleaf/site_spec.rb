@@ -13,13 +13,10 @@ describe 'Site' do
   end
 
   describe '#assets' do
-    before do
-      stub_request(:get, %r{sites\/#{SITE_ID}\/assets\z}).to_return(body: ASSETS, headers: { content_type: 'application/json' })
-      stub_request(:get, %r{sites\/\/assets\z}).to_return(body: ERROR, headers: { content_type: 'application/json' })
-    end
     subject { site.assets }
     context 'when id is present' do
       let(:id) { SITE_ID }
+      before { stub_request(:get, %r{sites\/#{SITE_ID}\/assets\z}).to_return(body: ASSETS, headers: { content_type: 'application/json' }) }
       it { should be_an_instance_of Array }
       it 'should return an array of assets' do
         site.assets.each { |asset| expect(asset).to be_instance_of(Siteleaf::Asset) }
@@ -27,19 +24,17 @@ describe 'Site' do
     end
     context 'when id is nil' do
       it 'should raise error for each_pair function in attributes function' do
+        stub_request(:get, %r{sites\/\/assets\z}).to_return(body: ERROR, headers: { content_type: 'application/json' })
         expect { site.assets }.to raise_error NoMethodError
       end
     end
   end
 
   describe '#pages' do
-    before do
-      stub_request(:get, %r{sites\/#{SITE_ID}\/pages\z}).to_return(body: PAGES, headers: { content_type: 'application/json' })
-      stub_request(:get, %r{sites\/\/pages\z}).to_return(body: ERROR, headers: { content_type: 'application/json' })
-    end
     subject { site.pages }
     context 'when id is present' do
       let(:id) { SITE_ID }
+      before { stub_request(:get, %r{sites\/#{SITE_ID}\/pages\z}).to_return(body: PAGES, headers: { content_type: 'application/json' }) }
       it { should be_an_instance_of Array }
       it 'should return an array of pages' do
         site.pages.each { |page| expect(page).to be_instance_of(Siteleaf::Page) }
@@ -47,19 +42,17 @@ describe 'Site' do
     end
     context 'when id is nil' do
       it 'should raise error for each_pair function in attributes function' do
+        stub_request(:get, %r{sites\/\/posts\z}).to_return(body: ERROR, headers: { content_type: 'application/json' })
         expect { site.pages }.to raise_error NoMethodError
       end
     end
   end
 
   describe '#posts' do
-    before do
-      stub_request(:get, %r{sites\/#{SITE_ID}\/posts\z}).to_return(body: POSTS, headers: { content_type: 'application/json' })
-      stub_request(:get, %r{sites\/\/posts\z}).to_return(body: ERROR, headers: { content_type: 'application/json' })
-    end
     subject { site.posts }
     context 'when id is present' do
       let(:id) { SITE_ID }
+      before { stub_request(:get, %r{sites\/#{SITE_ID}\/posts\z}).to_return(body: POSTS, headers: { content_type: 'application/json' }) }
       it { should be_an_instance_of Array }
       it 'should return an array of posts' do
         site.posts.each { |post|  expect(post).to be_instance_of(Siteleaf::Post) }
@@ -67,6 +60,7 @@ describe 'Site' do
     end
     context 'when id is nil' do
       it 'should raise error for each_pair function in attributes function' do
+        stub_request(:get, %r{sites\/\/posts\z}).to_return(body: ERROR, headers: { content_type: 'application/json' })
         expect { site.posts }.to raise_error NoMethodError
       end
     end

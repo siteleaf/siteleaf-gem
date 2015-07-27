@@ -31,13 +31,10 @@ describe 'Post' do
   end
 
   describe '#assets' do
-    before do
-      stub_request(:get, %r{posts\/#{POST_ID}\/assets\z}).to_return(body: ASSETS, headers: { content_type: 'application/json' })
-      stub_request(:get, %r{posts\/\/assets\z}).to_return(body: ERROR, headers: { content_type: 'application/json' })
-    end
     subject { post.assets }
     context 'when id is present' do
       let(:id) { POST_ID }
+      before { stub_request(:get, %r{posts\/#{POST_ID}\/assets\z}).to_return(body: ASSETS, headers: { content_type: 'application/json' }) }
       it { should be_an_instance_of Array }
       it 'should return an array of assets' do
         post.assets.each { |asset| expect(asset).to be_instance_of(Siteleaf::Asset) }
@@ -45,6 +42,7 @@ describe 'Post' do
     end
     context 'when id is nil' do
       it 'should raise error for each_pair function in attributes function' do
+        stub_request(:get, %r{posts\/\/assets\z}).to_return(body: ERROR, headers: { content_type: 'application/json' })
         expect { post.assets }.to raise_error NoMethodError
       end
     end

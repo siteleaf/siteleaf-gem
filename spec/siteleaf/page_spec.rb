@@ -30,13 +30,10 @@ describe 'Page' do
   end
 
   describe '#assets' do
-    before do
-      stub_request(:get, %r{pages\/#{PAGE_ID}\/assets\z}).to_return(body: ASSETS, headers: { content_type: 'application/json' })
-      stub_request(:get, %r{pages\/\/assets\z}).to_return(body: ERROR, headers: { content_type: 'application/json' })
-    end
     subject { page.assets }
     context 'when id is present' do
       let(:id) { PAGE_ID }
+      before { stub_request(:get, %r{pages\/#{PAGE_ID}\/assets\z}).to_return(body: ASSETS, headers: { content_type: 'application/json' }) }
       it { should be_instance_of Array }
       it 'should return an array of assets' do
         page.assets.each { |asset| expect(asset).to be_instance_of Siteleaf::Asset }
@@ -44,19 +41,17 @@ describe 'Page' do
     end
     context 'when id is nil' do
       it 'should raise error for each_pair function in attributes function' do
+        stub_request(:get, %r{pages\/\/assets\z}).to_return(body: ERROR, headers: { content_type: 'application/json' })
         expect { page.assets }.to raise_error NoMethodError
       end
     end
   end
 
   describe '#posts' do
-    before do
-      stub_request(:get, %r{pages\/#{PAGE_ID}\/posts\z}).to_return(body: POSTS, headers: { content_type: 'application/json' })
-      stub_request(:get, %r{pages\/\/posts\z}).to_return(body: ERROR, headers: { content_type: 'application/json' })
-    end
     subject { page.posts }
     context 'when id is present' do
       let(:id) { PAGE_ID }
+      before { stub_request(:get, %r{pages\/#{PAGE_ID}\/posts\z}).to_return(body: POSTS, headers: { content_type: 'application/json' }) }
       it { should be_instance_of Array }
       it 'should return an array of posts' do
         page.posts.each { |post| expect(post).to be_instance_of Siteleaf::Post }
@@ -64,19 +59,17 @@ describe 'Page' do
     end
     context 'when id is nil' do
       it 'should raise error for each_pair function in attributes function' do
+        stub_request(:get, %r{pages\/\/posts\z}).to_return(body: ERROR, headers: { content_type: 'application/json' })
         expect { page.posts }.to raise_error NoMethodError
       end
     end
   end
 
   describe '#pages' do
-    before do
-      stub_request(:get, %r{pages\/#{PAGE_ID}\?include=pages\z}).to_return(body: PAGE, headers: { content_type: 'application/json' })
-      stub_request(:get, %r{pages\/\?include=pages\z}).to_return(body: ERROR, headers: { content_type: 'application/json' })
-    end
     subject { page.pages }
     context 'when id is present' do
       let(:id) { PAGE_ID }
+      before { stub_request(:get, %r{pages\/#{PAGE_ID}\?include=pages\z}).to_return(body: PAGE, headers: { content_type: 'application/json' }) }
       it { should be_instance_of Array }
       it 'should return an array of pages' do
         page.pages.each { |page| expect(page).to be_instance_of Siteleaf::Page }
@@ -84,18 +77,17 @@ describe 'Page' do
     end
     context 'when id is nil' do
       it 'should raise error for each_pair function in attributes function' do
+        stub_request(:get, %r{pages\/\?include=pages\z}).to_return(body: ERROR, headers: { content_type: 'application/json' })
         expect { page.pages }.to raise_error TypeError
       end
     end
   end
 
   describe '#page' do
-    before do
-      stub_request(:get, %r{/pages\z}).to_return(body: PAGES, headers: { content_type: 'application/json' })
-    end
     subject { page.page }
     context 'when parent_id is present' do
       let(:parent_id) { PARENT_ID }
+      before { stub_request(:get, %r{/pages\z}).to_return(body: PAGES, headers: { content_type: 'application/json' }) }
       it { should be_an_instance_of Siteleaf::Page }
     end
     context 'when parent_id is nil' do

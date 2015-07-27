@@ -19,19 +19,17 @@ describe 'Entity' do
   end
 
   describe '#self.all' do
-    before do
-      stub_request(:get, %r{\/posts\z}).to_return(body: POSTS, headers: { content_type: 'application/json' })
-      stub_request(:get, %r{\/pages\z}).to_return(body: PAGES, headers: { content_type: 'application/json' })
-      stub_request(:get, %r{\/assets\z}).to_return(body: ASSETS, headers: { content_type: 'application/json' })
-      stub_request(:get, %r{\/users\z}).to_return(body: USERS, headers: { content_type: 'application/json' })
-      stub_request(:get, %r{\/sites\z}).to_return(body: SITES, headers: { content_type: 'application/json' })
-    end
     subject(:post_all) { post.all }
     subject(:page_all) { page.all }
     subject(:asset_all) { asset.all }
     subject(:user_all) { user.all }
     subject(:site_all) { site.all }
     it 'returns array of Siteleaf objects of that instance' do
+      stub_request(:get, %r{\/posts\z}).to_return(body: POSTS, headers: { content_type: 'application/json' })
+      stub_request(:get, %r{\/pages\z}).to_return(body: PAGES, headers: { content_type: 'application/json' })
+      stub_request(:get, %r{\/assets\z}).to_return(body: ASSETS, headers: { content_type: 'application/json' })
+      stub_request(:get, %r{\/users\z}).to_return(body: USERS, headers: { content_type: 'application/json' })
+      stub_request(:get, %r{\/sites\z}).to_return(body: SITES, headers: { content_type: 'application/json' })
       expect(post_all).to be_an_instance_of Array
       expect(page_all).to be_an_instance_of Array
       expect(asset_all).to be_an_instance_of Array
