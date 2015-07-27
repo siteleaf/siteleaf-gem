@@ -20,11 +20,11 @@ describe 'Entity' do
 
   describe '#self.all' do
     before do
-      stub_request(:get, %r{\/posts\z}).to_return(body: ENV['posts'], headers: { content_type: 'application/json' })
-      stub_request(:get, %r{\/pages\z}).to_return(body: ENV['pages'], headers: { content_type: 'application/json' })
-      stub_request(:get, %r{\/assets\z}).to_return(body: ENV['assets'], headers: { content_type: 'application/json' })
-      stub_request(:get, %r{\/users\z}).to_return(body: ENV['users'], headers: { content_type: 'application/json' })
-      stub_request(:get, %r{\/sites\z}).to_return(body: ENV['sites'], headers: { content_type: 'application/json' })
+      stub_request(:get, %r{\/posts\z}).to_return(body: POSTS, headers: { content_type: 'application/json' })
+      stub_request(:get, %r{\/pages\z}).to_return(body: PAGES, headers: { content_type: 'application/json' })
+      stub_request(:get, %r{\/assets\z}).to_return(body: ASSETS, headers: { content_type: 'application/json' })
+      stub_request(:get, %r{\/users\z}).to_return(body: USERS, headers: { content_type: 'application/json' })
+      stub_request(:get, %r{\/sites\z}).to_return(body: SITES, headers: { content_type: 'application/json' })
     end
     subject(:post_all) { post.all }
     subject(:page_all) { page.all }
@@ -46,11 +46,11 @@ describe 'Entity' do
   end
 
   describe '#self.find' do
-    subject(:post_find) { post.find(ENV['POST_ID']) }
-    subject(:page_find) { page.find(ENV['PAGE_ID']) }
-    subject(:asset_find) { asset.find(ENV['ASSET_ID']) }
-    subject(:user_find) { user.find(ENV['USER_ID']) }
-    subject(:site_find) { site.find(ENV['SITE_ID']) }
+    subject(:post_find) { post.find(POST_ID) }
+    subject(:page_find) { page.find(PAGE_ID) }
+    subject(:asset_find) { asset.find(ASSET_ID) }
+    subject(:user_find) { user.find(USER_ID) }
+    subject(:site_find) { site.find(SITE_ID) }
     it 'returns a Siteleaf object of that instance if parameter is passed' do
       expect(post_find).to be_an_instance_of Siteleaf::Post
       expect(page_find).to be_an_instance_of Siteleaf::Page
@@ -87,36 +87,6 @@ describe 'Entity' do
       expect(asset_save).to be_an_instance_of Siteleaf::Asset
       expect(user_save).to be_an_instance_of Siteleaf::User
       expect(site_save).to be_an_instance_of Siteleaf::Site
-    end
-  end
-
-  describe '#self.delete' do
-    subject(:post_delete) { post.delete(ENV['POST_ID']) }
-    subject(:page_delete) { page.delete(ENV['PAGE_ID']) }
-    subject(:asset_delete) { asset.delete(ENV['ASSET_ID']) }
-    subject(:user_delete) { user.delete(ENV['USER_ID']) }
-    subject(:site_delete) { site.delete(ENV['SITE_ID']) }
-    it 'returns a Siteleaf object if siteleaf object exists' do
-      # expect(post_delete).to eql 'error' => 'Not found!'
-      # expect(page_delete).to eql 'error' => 'Not found!'
-      # expect(asset_delete).to eql 'error' => 'Not found!'
-      # expect(user_delete).to eql 'error' => 'Not found!'
-      # expect(site_delete).to eql 'error' => 'Not found!'
-    end
-  end
-
-  describe '#delete' do
-    subject(:post_del) { post.new(attributes).delete }
-    subject(:page_del) { page.new(attributes).delete }
-    subject(:asset_del) { asset.new(attributes).delete }
-    subject(:user_del) { user.new(attributes).delete }
-    subject(:site_del) { site.new(attributes).delete }
-    it 'returns a Siteleaf object if siteleaf object exists' do
-      # expect(post_del).to eql 'error' => 'Not found!'
-      # expect(page_del).to eql 'error' => 'Not found!'
-      # expect(asset_del).to eql 'error' => 'Not found!'
-      # expect(user_del).to eql 'error' => 'Not found!'
-      # expect(site_del).to eql 'error' => 'Not found!'
     end
   end
 

@@ -9,8 +9,8 @@ describe 'Post' do
   describe '#create_endpoint' do
     subject { post.create_endpoint }
     context 'when parent_id is present' do
-      let(:parent_id) { ENV['PARENT_ID'] }
-      it { should eql "pages/#{ENV['PARENT_ID']}/posts" }
+      let(:parent_id) { PARENT_ID }
+      it { should eql "pages/#{PARENT_ID}/posts" }
     end
     context 'when parent_id is nil' do
       it { should eql 'pages//posts' }
@@ -20,7 +20,7 @@ describe 'Post' do
   describe '#parent' do
     subject { post.parent }
     context 'when parent_id is present' do
-      let(:parent_id) { ENV['PARENT_ID'] }
+      let(:parent_id) { PARENT_ID }
       it { should be_an_instance_of Siteleaf::Page }
     end
     context 'when parent_id is nil' do
@@ -32,12 +32,12 @@ describe 'Post' do
 
   describe '#assets' do
     before do
-      stub_request(:get, %r{posts\/#{ENV['POST_ID']}\/assets\z}).to_return(body: ENV['assets'], headers: { content_type: 'application/json' })
-      stub_request(:get, %r{posts\/\/assets\z}).to_return(body: ENV['error'], headers: { content_type: 'application/json' })
+      stub_request(:get, %r{posts\/#{POST_ID}\/assets\z}).to_return(body: ASSETS, headers: { content_type: 'application/json' })
+      stub_request(:get, %r{posts\/\/assets\z}).to_return(body: ERROR, headers: { content_type: 'application/json' })
     end
     subject { post.assets }
     context 'when id is present' do
-      let(:id) { ENV['POST_ID'] }
+      let(:id) { POST_ID }
       it { should be_an_instance_of Array }
       it 'should return an array of assets' do
         post.assets.each { |asset| expect(asset).to be_instance_of(Siteleaf::Asset) }
