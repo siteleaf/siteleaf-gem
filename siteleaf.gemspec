@@ -19,11 +19,16 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'httmultiparty', '>= 0.3.13'
   gem.add_dependency 'rack'
 
-  # Added for Environment Variable support especially for user authentication
-  gem.add_development_dependency 'figs'
-
-  # Added for RSpec testing of mainly figs
+  # Added for RSpec testing
   gem.add_development_dependency 'rspec'
+  # To mock a fake web for HTTP requests
+  gem.add_development_dependency 'webmock'
+  # For code coverage analysis of RSpec
+  gem.add_development_dependency 'simplecov'
+  # For developers to adhere to codings standards
+  gem.add_development_dependency 'rubocop'
+  # For rake tasks
+  gem.add_development_dependency 'rake'
 
   gem.files         = `git ls-files`.split($/)
   gem.files         += Dir.glob("lib/**/*.rb")
