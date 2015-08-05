@@ -32,8 +32,8 @@ module Siteleaf
 
   def self.load_env_vars
     return false unless File.exist?('./Figsfile')
-    Figs.load
     require 'figs'
+    Figs.load
     self.api_key = ENV['API_KEY']
     self.api_secret = ENV['API_SECRET']
     true
