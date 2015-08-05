@@ -32,5 +32,4 @@ describe 'Siteleaf' do
       it { should be_truthy }
     end
   end
-
 end
