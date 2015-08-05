@@ -29,7 +29,7 @@ describe 'Siteleaf' do
   describe '#self.load_settings' do
     subject { siteleaf.load_settings }
     context 'Returns a settings File' do
-      it { should be_truthy }
+      # pending
     end
   end
 end
