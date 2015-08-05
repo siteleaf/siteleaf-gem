@@ -22,6 +22,9 @@ Gem::Specification.new do |gem|
   # Added for Environment Variable support especially for user authentication
   gem.add_development_dependency 'figs'
 
+  # Added for RSpec testing of mainly figs
+  gem.add_development_dependency 'rspec'
+
   gem.files         = `git ls-files`.split($/)
   gem.files         += Dir.glob("lib/**/*.rb")
   gem.executables   = ["siteleaf"]
