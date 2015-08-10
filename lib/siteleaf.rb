@@ -30,7 +30,17 @@ module Siteleaf
     File.expand_path('~/.siteleaf')
   end
 
+  def self.load_env_vars
+    return false unless File.exist?('./Figsfile')
+    require 'figs'
+    Figs.load
+    self.api_key = ENV['API_KEY']
+    self.api_secret = ENV['API_SECRET']
+    true
+  end
+
   def self.load_settings
+    return if load_env_vars
     if File.exist?(self.settings_file)
       config = File.open(self.settings_file) do|file|
         Marshal.load(file)
