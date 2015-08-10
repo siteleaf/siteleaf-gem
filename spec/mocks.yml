@@ -1,0 +1,6 @@
+asset: '{"id":"","filename":"","url":"","permalink":"","file":{"url":"","thumbnail":{"url":null}},"content_type":"","filesize":0,"checksum":"","created_at":"","updated_at":"","meta":[{"id":"","key":"","value":""}]}'
+page: '{"id":"","title":"","slug":"","url":"","body":"","visibility":"","created_at":"","updated_at":"","published_at":"","user_id":"","site_id":"","parent_id":null,"pages":[{"id":"","title":"","slug":"","url":"","body":"","visibility":"","created_at":"","updated_at":"","published_at":"","user_id":"","site_id":"","parent_id":"","meta":[]}],"meta":[{"id":"","key":"","value":""}]}'
+post: '{"id":"","title":"","slug":"","url":"","body":"","visibility":"","created_at":"","updated_at":"","published_at":"","user_id":"","site_id":"","parent_id":"","meta":[{"id":"","key":"","value":""}],"taxonomy":[{"id":"","key":"","slug":"","values":[{"value":"","slug":"","url":""}]}]}'
+user: '{"id": "", "email": "", "firstname": "", "lastname": "", "fullname": "", "created_at": "",  "updated_at": ""}'
+site: '{"id":"","title":"","domain":"","cname":"","timezone":"","created_at":"","updated_at":"","user_id":"","meta":[]}'
+error: '["error", "Not found!"]'
