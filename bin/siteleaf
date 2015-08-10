@@ -5,241 +5,29 @@ require 'fileutils'
 require 'open-uri'
 require 'digest/md5'
 
-def help
-  %Q(
-Usage: siteleaf [COMMAND] [OPTIONS]
+require_relative 'commands/commands'
 
-Commands:
-  auth                Login in with your credentials
-  s, server           Starts a local server
-  c, config DOMAIN    Configure an existing directory
-  n, new DOMAIN       Creates new site on siteleaf.net
-  pull theme          Pulls theme files for configured site from Siteleaf
-  push theme          Pushes all files in dir as theme to configured site
-  publish             Publish website to hosting provider
-  help                Prints this help document
-  version             Prints the siteleaf gem version
-
-Options:
-  -h, --help          Prints this help document
-  -v, --version       Prints the siteleaf gem version
-  -p, --port PORT     Binds local server to PORT (default: 9292)
-  -q, --quiet         Suppress publish status
-
-See https://github.com/siteleaf/siteleaf-gem for additional documentation.
-)
-end
-
-def auth(re_auth = false)
-  Siteleaf.load_settings if !re_auth
-
-  if re_auth or !Siteleaf.api_key
-    print 'Enter your Siteleaf e-mail: '
-    email = $stdin.gets.chomp
-
-    print 'Enter your Siteleaf password: '
-    system 'stty -echo'
-    password = $stdin.gets.chomp
-    system 'stty echo'
-
-    puts "\nAuthorizing..."
-
-    if (auth = Siteleaf::Client.auth(email, password)) && (auth.is_a?(Hash)) && (auth.has_key?('api_key'))
-      File.open(Siteleaf.settings_file,'w') do|file|
-        Marshal.dump({:api_key => auth['api_key'], :api_secret => auth['api_secret']}, file)
-      end
-      puts "=> Gem authorized." if re_auth
-      return true
-    else
-      puts auth['error'] || "Could not authorize, check your e-mail or password."
-      return false
-    end
-  end
-end
-
-def config(site)
-  File.open('config.ru', 'w') { |file| file.write "# Intended for development purposes only, do not upload or use in production.
-# See https://github.com/siteleaf/siteleaf-gem for documentation.
-require 'rubygems'
-require 'siteleaf'
-run Siteleaf::Server.new(:site_id => '#{site.id}')" }
-
-  pow_path = File.expand_path('~/.pow')
-  if File.directory?(pow_path)
-    site_no_tld = site.domain.gsub(/\.[a-z]{0,4}$/i,'')
-    site_symlink = "#{pow_path}/#{site_no_tld}"
-    FileUtils.rm(site_symlink) if File.symlink?(site_symlink)
-    FileUtils.symlink(File.expand_path('.'), site_symlink)
-    puts "=> Site configured with Pow, open `http://#{site_no_tld}.dev` to test site locally.\n"
-  else
-    puts "=> Site configured, run `siteleaf server` to test site locally.\n"
-  end
-end
-
-def get_site_id
-  if File.exist?('config.ru')
-    if match = /:site_id => '([a-z0-9]{24})'/i.match(File.read('config.ru'))
-      return match[1]
-    end
-  end
-end
-
-def get_theme_assets(site_id)
-  if assets = Siteleaf::Theme.assets_by_site_id(site_id)
-    updated_count = 0
-    assets.each do |asset|
-      if File.exist?(asset.filename) && (asset.checksum == Digest::MD5.hexdigest(File.read(asset.filename)))
-        # file is up to date
-      else
-        print "Downloading #{asset.filename}..."
-        file = open(asset.file['url'], /^1\.8/.match(RUBY_VERSION) ? 'r' : 'r:UTF-8') { |f| f.read }
-        FileUtils.mkdir_p(File.dirname(asset.filename))
-        File.open(asset.filename, /^1\.8/.match(RUBY_VERSION) ? 'w' : 'w:UTF-8') { |f| f.write(file) }
-        updated_count += 1
-        print "complete.\n"
-      end
-    end
-    puts "=> #{updated_count} asset(s) downloaded.\n"
-  end
-end
-
-def put_theme_assets(site_id)
-  theme = Siteleaf::Theme.find_by_site_id(site_id)
-  assets = theme.assets
-  updated_count = 0
-  ignore_paths = ['config.ru', '.*']
-  ignore_paths += File.read('.siteleafignore').split(/\r?\n/) if File.exists?('.siteleafignore')
-  
-  # upload files
-  paths = Dir.glob("**/*")
-  paths.each do |path|
-    if !File.directory?(path) && !ignore_paths.any?{|i| File.fnmatch?(i, path, File::FNM_CASEFOLD) || File.fnmatch?(i, File.basename(path), File::FNM_CASEFOLD) }
-      asset = assets.find{|a| a.filename == path }
-      if asset.nil? || (asset && asset.checksum != Digest::MD5.hexdigest(File.read(path)))
-        print "Uploading #{path}..."
-        asset.delete if asset
-        if response = Siteleaf::Asset.create({:site_id => site_id, :theme_id => theme.id, :file => File.new(path), :filename => path})
-          updated_count += 1
-          print "complete.\n"
-        else
-          print "error.\n"
-          break
-        end
-      end
-    end
-  end
-  
-  # check for old files
-  missing_assets = []
-  assets.each do |asset| 
-    missing_assets << asset if !paths.include?(asset.filename)
-  end
-  if missing_assets.empty?
-    puts "=> #{updated_count} asset(s) uploaded.\n"
-  else
-    print "=> #{updated_count} asset(s) uploaded. Delete the following #{missing_assets.size} unmatched asset(s)?\n"
-    missing_assets.each do |asset|
-      puts asset.filename
-    end
-    print '(y/n)? '
-    if $stdin.gets.chomp == 'y'
-      missing_assets.each do |asset|
-        print "Deleting #{asset.filename}..."
-        asset.delete
-        print "complete.\n"
-      end
-      puts "=> #{missing_assets.size} asset(s) deleted.\n"
-    end
-  end
-end
-
-def publish(site_id, quiet = true)
-  site = Siteleaf::Site.new(id: site_id)
-  job = site.publish
-  
-  if quiet
-    puts "=> Publish queued.\n"
-  else
-    last_msg = nil
-    job.stream do |s|
-      if (msg = s["message"]) && (msg != last_msg)
-        puts msg
-        last_msg = msg
-      end
-    end
-    puts "=> Publish completed.\n"
-  end
-end
-
+# Select Case for different Siteleaf command
 case ARGV[0]
 when '-v', '--version', 'version'
   puts Siteleaf::VERSION
 when '-h', '--help', 'help'
-  puts help
+  puts Help.help
 when 's', 'server'
-  if File.exist?('config.ru')
-    port = ARGV[2] if %w[-p --port].include?(ARGV[1]) && ARGV[1]
-    `rackup config.ru -p #{port || '9292'} >&2`
-  else
-    puts "No config found, run `siteleaf config yoursite.com`.\n"
-  end
+  Commands.sever_command
 when 'auth'
-  auth true
+  Commands::Execution::Authenticate.auth true
 when 'c', 'config', 'setup'
-  if auth != false
-    if site = Siteleaf::Site.find_by_domain(ARGV[1])
-      config site
-    else
-      puts "No site found for `#{ARGV[1]}`, run `siteleaf new #{ARGV[1]}` to create it.\n"
-    end
-  end
+  Commands.config_command
 when 'n', 'new'
-  if auth != false
-    if (site = Siteleaf::Site.create(:title => ARGV[1], :domain => ARGV[1])) && (!site.error)
-      dir = ARGV.size >= 3 ? ARGV[2] : ARGV[1]
-      Dir.mkdir(dir) unless File.directory?(dir)
-      Dir.chdir(dir)
-      config site
-    else
-      puts "Could not create site `#{ARGV[1]}`.\n"
-    end
-  end
+  Commands.new_command
 when 'pull'
-  case ARGV[1]
-  when 'theme'
-    if auth != false
-      if site_id = get_site_id
-        get_theme_assets(site_id)
-      else
-        puts "Site not configured, run `siteleaf config yoursite.com`.\n"
-      end
-    end
-  else
-    puts "`#{ARGV[0]}` command not found.\n"
-  end
+  Commands.pull_command
 when 'push'
-  case ARGV[1]
-  when 'theme'
-    if auth != false
-      if site_id = get_site_id
-        put_theme_assets(site_id)
-      else
-        puts "Site not configured, run `siteleaf config yoursite.com`.\n"
-      end
-    end
-  else
-    puts "`#{ARGV[0]}` command not found.\n"
-  end
+  Commands.push_command
 when 'publish'
-  if auth != false
-    quiet = %w[-q --quiet].include?(ARGV[1]) && ARGV[1]
-    if site_id = get_site_id
-      publish(site_id, quiet)
-    else
-      puts "Site not configured, run `siteleaf config yoursite.com`.\n"
-    end
-  end
+  Commands.publish_command
 else
   puts "`#{ARGV[0]}` command not found.\n"
-  puts help
+  puts Help.help
 end
