@@ -1,8 +1,8 @@
 module Siteleaf
-  class Page < Content
+  class File < Asset
 
     def create_endpoint
-      "sites/#{self.site_id}/pages"
+      "sites/#{self.site_id}/files"
     end
     
   end

@@ -3,7 +3,9 @@
 require 'siteleaf'
 require 'fileutils'
 require 'open-uri'
-require 'digest/md5'
+require 'digest/sha1'
+require 'tempfile'
+require 'yaml'
 
 def help
   %Q(
@@ -11,7 +13,6 @@ Usage: siteleaf [COMMAND] [OPTIONS]
 
 Commands:
   auth                Login in with your credentials
-  s, server           Starts a local server
   c, config DOMAIN    Configure an existing directory
   n, new DOMAIN       Creates new site on siteleaf.net
   pull theme          Pulls theme files for configured site from Siteleaf
@@ -23,7 +24,6 @@ Commands:
 Options:
   -h, --help          Prints this help document
   -v, --version       Prints the siteleaf gem version
-  -p, --port PORT     Binds local server to PORT (default: 9292)
   -q, --quiet         Suppress publish status
 
 See https://github.com/siteleaf/siteleaf-gem for additional documentation.
@@ -45,9 +45,7 @@ def auth(re_auth = false)
     puts "\nAuthorizing..."
 
     if (auth = Siteleaf::Client.auth(email, password)) && (auth.is_a?(Hash)) && (auth.has_key?('api_key'))
-      File.open(Siteleaf.settings_file,'w') do|file|
-        Marshal.dump({:api_key => auth['api_key'], :api_secret => auth['api_secret']}, file)
-      end
+      Siteleaf.save_settings({api_key: auth['api_key'], api_secret: auth['api_secret']})
       puts "=> Gem authorized." if re_auth
       return true
     else
@@ -58,73 +56,176 @@ def auth(re_auth = false)
 end
 
 def config(site)
-  File.open('config.ru', 'w') { |file| file.write "# Intended for development purposes only, do not upload or use in production.
-# See https://github.com/siteleaf/siteleaf-gem for documentation.
-require 'rubygems'
-require 'siteleaf'
-run Siteleaf::Server.new(:site_id => '#{site.id}')" }
-
-  pow_path = File.expand_path('~/.pow')
-  if File.directory?(pow_path)
-    site_no_tld = site.domain.gsub(/\.[a-z]{0,4}$/i,'')
-    site_symlink = "#{pow_path}/#{site_no_tld}"
-    FileUtils.rm(site_symlink) if File.symlink?(site_symlink)
-    FileUtils.symlink(File.expand_path('.'), site_symlink)
-    puts "=> Site configured with Pow, open `http://#{site_no_tld}.dev` to test site locally.\n"
-  else
-    puts "=> Site configured, run `siteleaf server` to test site locally.\n"
-  end
+  Siteleaf.save_settings({site_id: site.id}, '.siteleaf.yml')
+  puts "=> Site configured."
 end
 
 def get_site_id
-  if File.exist?('config.ru')
-    if match = /:site_id => '([a-z0-9]{24})'/i.match(File.read('config.ru'))
-      return match[1]
+  # check env vars
+  [:api_key, :api_secret, :api_base, :api_version].each do |key|
+    if value = ENV[key.to_s.upcase]
+      Siteleaf.send "#{key}=", value
     end
+  end
+  
+  ENV['SITE_ID'] || if settings = Siteleaf.load_settings('.siteleaf.yml')
+    settings[:site_id]
   end
 end
 
 def get_theme_assets(site_id)
-  if assets = Siteleaf::Theme.assets_by_site_id(site_id)
-    updated_count = 0
-    assets.each do |asset|
-      if File.exist?(asset.filename) && (asset.checksum == Digest::MD5.hexdigest(File.read(asset.filename)))
-        # file is up to date
-      else
-        print "Downloading #{asset.filename}..."
-        file = open(asset.file['url'], /^1\.8/.match(RUBY_VERSION) ? 'r' : 'r:UTF-8') { |f| f.read }
-        FileUtils.mkdir_p(File.dirname(asset.filename))
-        File.open(asset.filename, /^1\.8/.match(RUBY_VERSION) ? 'w' : 'w:UTF-8') { |f| f.write(file) }
-        updated_count += 1
-        print "complete.\n"
-      end
-    end
-    puts "=> #{updated_count} asset(s) downloaded.\n"
+  # get all the things
+  site = Siteleaf::Site.new(id: site_id)
+  files = site.files
+  uploads = site.uploads
+  pages = site.pages
+  posts = site.posts
+  collections = site.collections
+  documents = []
+  collections.each do |collection|
+    documents += collection.documents
   end
+  
+  assets = files + uploads + pages + posts + documents
+  
+  updated_count = 0
+  
+  assets.each do |asset|
+    sha = ::File.exist?(asset.filename) && Digest::SHA1.hexdigest(::File.read(asset.filename))
+    if asset.sha == sha
+      # file is up to date
+    else
+      print "Downloading #{asset.filename}..."
+      FileUtils.mkdir_p(::File.dirname(asset.filename))
+      ::File.open(asset.filename, 'w:UTF-8') { |f| f.write(asset.to_file) }
+      updated_count += 1
+      print "complete.\n"
+    end
+  end
+  
+  puts "=> #{updated_count} file(s) downloaded.\n"
 end
 
 def put_theme_assets(site_id)
-  theme = Siteleaf::Theme.find_by_site_id(site_id)
-  assets = theme.assets
+  # check config
+  config = ::File.exist?('_config.yml') ? YAML::load(::File.read('_config.yml')) : {}
+  markdown_ext = (config['markdown_ext'] || 'markdown,mdw,mdwn,md,text').split(',')
+  
+  # get all the things
+  site = Siteleaf::Site.new(id: site_id)
+  files = site.files
+  uploads = site.uploads
+  pages = site.pages
+  posts = site.posts
+  collections = site.collections
+  documents = []
+  collections.each do |collection|
+    documents += collection.documents
+  end
+  
+  assets = files + uploads + pages + posts + documents
+  
   updated_count = 0
-  ignore_paths = ['config.ru', '.*']
-  ignore_paths += File.read('.siteleafignore').split(/\r?\n/) if File.exists?('.siteleafignore')
+  ignore_paths = ['_config.yml', 'config.ru', '.*', '_site/*', 'Gemfile', 'Gemfile.lock']
+  ignore_paths += ::File.read('.siteleafignore').split(/\r?\n/) if ::File.exists?('.siteleafignore')
+  ignore_paths += config['exclude'] if config['exclude'].is_a? Array
+  
+  # create collections
+  existing_collections = config['collections'] || {} 
+  existing_collections.each do |label, metadata|
+    path = label.gsub(/[^a-z0-9_\-\.]/i, '')
+    unless collections.find {|c| c.path == path } 
+      # create any new collections
+      output = metadata.delete('output')
+      permalink = metadata.delete('permalink')
+      collections << Siteleaf::Collection.create(site_id: site.id, title: label, path: path, permalink: permalink, metadata: metadata)
+    end
+  end
+  collection_dirs = collections.map{|c| c.basename }
   
   # upload files
   paths = Dir.glob("**/*")
   paths.each do |path|
-    if !File.directory?(path) && !ignore_paths.any?{|i| File.fnmatch?(i, path, File::FNM_CASEFOLD) || File.fnmatch?(i, File.basename(path), File::FNM_CASEFOLD) }
+    if !::File.directory?(path) && !ignore_paths.any?{|i| ::File.fnmatch?(i, path, File::FNM_CASEFOLD) || ::File.fnmatch?(i, ::File.basename(path), File::FNM_CASEFOLD) }
       asset = assets.find{|a| a.filename == path }
-      if asset.nil? || (asset && asset.checksum != Digest::MD5.hexdigest(File.read(path)))
+      sha = Digest::SHA1.hexdigest(::File.read(path))
+      if asset.nil? || asset.sha != sha
+        
         print "Uploading #{path}..."
-        asset.delete if asset
-        if response = Siteleaf::Asset.create({:site_id => site_id, :theme_id => theme.id, :file => File.new(path), :filename => path})
+        
+        static = !has_yaml_header?(path)
+        basename = ::File.basename(path)
+        basedir = ::File.dirname(path).split('/').first
+        ext = ::File.extname(path).sub('.', '')
+
+        response = if !static && markdown_ext.include?(ext) && basedir != '_uploads'
+        
+          metadata = {}
+          unless static
+            body, metadata = read_frontmatter(path)
+          end
+        
+          clean_path = path.sub("#{basedir}/",'').sub(".#{ext}",'')
+          title = metadata.delete('title') || ::File.basename(clean_path)
+          
+          attrs = {site_id: site.id, title: title, path: clean_path, static: static}
+          attrs[:body] = body if body && body != ""
+          attrs[:metadata] = metadata if metadata && !metadata.empty? 
+          model = if basedir == '_drafts'
+            attrs[:visibility] = 'draft'
+            Siteleaf::Post
+          elsif basedir == '_posts'
+            attrs[:visibility] = (metadata['published'].delete == false) ? 'hidden' : 'visible'
+            Siteleaf::Post
+          elsif collection = collections.find {|c| c.basename == basedir }
+            attrs[:collection_id] = collection.id
+            Siteleaf::Document
+          else
+            attrs[:path] = path.sub(".#{ext}",'')
+            Siteleaf::Page
+          end
+          
+          if asset && asset.is_a?(model)
+            attrs[:id] = asset.id
+            model.new(attrs).save
+          else
+            asset.delete if asset
+            model.create(attrs)
+          end
+        
+        else
+        
+          asset.delete if asset
+          
+          file = path
+          metadata = {}
+          unless static
+            body, metadata = read_frontmatter(path)
+            file = Tempfile.new(basename)
+            ::File.open(file, 'w:UTF-8') { |f| f.write(body) }
+          end
+          
+          attrs = {site_id: site.id, file: ::File.new(path), path: path, static: static}
+          model = if basedir == '_uploads'
+            attrs[:path] = path.sub("#{basedir}/",'')
+            Siteleaf::Upload
+          else
+            Siteleaf::File
+          end
+          attrs[:metadata] = metadata if metadata && !metadata.empty? 
+          
+          model.create(attrs)
+          
+        end
+
+        if error = !response || response.error || response.message
+          print (error) ? "error: #{error}\n" : "error.\n"
+          break
+        else
           updated_count += 1
           print "complete.\n"
-        else
-          print "error.\n"
-          break
         end
+        
       end
     end
   end
@@ -135,9 +236,9 @@ def put_theme_assets(site_id)
     missing_assets << asset if !paths.include?(asset.filename)
   end
   if missing_assets.empty?
-    puts "=> #{updated_count} asset(s) uploaded.\n"
+    puts "=> #{updated_count} file(s) uploaded.\n"
   else
-    print "=> #{updated_count} asset(s) uploaded. Delete the following #{missing_assets.size} unmatched asset(s)?\n"
+    print "=> #{updated_count} file(s) uploaded. Delete the following #{missing_assets.size} unmatched file(s)?\n"
     missing_assets.each do |asset|
       puts asset.filename
     end
@@ -148,9 +249,23 @@ def put_theme_assets(site_id)
         asset.delete
         print "complete.\n"
       end
-      puts "=> #{missing_assets.size} asset(s) deleted.\n"
+      puts "=> #{missing_assets.size} file(s) deleted.\n"
     end
   end
+end
+
+def has_yaml_header?(file)
+  !!(File.open(file, 'rb') { |f| f.read(5) } =~ /\A---\r?\n/)
+end
+
+def read_frontmatter(file)  
+  content = ::File.read(file)
+  metadata = {}
+  if content =~ /\A(---\s*\n.*?\n?)^((---|\.\.\.)\s*$\n?)/m
+    content = $POSTMATCH
+    metadata = YAML.load($1)
+  end
+  return content, metadata
 end
 
 def publish(site_id, quiet = true)
@@ -176,13 +291,6 @@ when '-v', '--version', 'version'
   puts Siteleaf::VERSION
 when '-h', '--help', 'help'
   puts help
-when 's', 'server'
-  if File.exist?('config.ru')
-    port = ARGV[2] if %w[-p --port].include?(ARGV[1]) && ARGV[1]
-    `rackup config.ru -p #{port || '9292'} >&2`
-  else
-    puts "No config found, run `siteleaf config yoursite.com`.\n"
-  end
 when 'auth'
   auth true
 when 'c', 'config', 'setup'
@@ -197,7 +305,7 @@ when 'n', 'new'
   if auth != false
     if (site = Siteleaf::Site.create(:title => ARGV[1], :domain => ARGV[1])) && (!site.error)
       dir = ARGV.size >= 3 ? ARGV[2] : ARGV[1]
-      Dir.mkdir(dir) unless File.directory?(dir)
+      Dir.mkdir(dir) unless ::File.directory?(dir)
       Dir.chdir(dir)
       config site
     else
@@ -207,8 +315,9 @@ when 'n', 'new'
 when 'pull'
   case ARGV[1]
   when 'theme'
+    site_id = get_site_id
     if auth != false
-      if site_id = get_site_id
+      if site_id
         get_theme_assets(site_id)
       else
         puts "Site not configured, run `siteleaf config yoursite.com`.\n"
@@ -220,8 +329,9 @@ when 'pull'
 when 'push'
   case ARGV[1]
   when 'theme'
+    site_id = get_site_id
     if auth != false
-      if site_id = get_site_id
+      if site_id
         put_theme_assets(site_id)
       else
         puts "Site not configured, run `siteleaf config yoursite.com`.\n"
@@ -231,9 +341,10 @@ when 'push'
     puts "`#{ARGV[0]}` command not found.\n"
   end
 when 'publish'
+  site_id = get_site_id
   if auth != false
     quiet = %w[-q --quiet].include?(ARGV[1]) && ARGV[1]
-    if site_id = get_site_id
+    if site_id
       publish(site_id, quiet)
     else
       puts "Site not configured, run `siteleaf config yoursite.com`.\n"

@@ -13,7 +13,8 @@ module Siteleaf
       end
     end
 
-    def self.get(path, params = nil)
+    def self.get(path, params = {})
+      params['limit'] = 9999
       self.execute(:get, path, params)
     end
 

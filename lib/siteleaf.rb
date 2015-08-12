@@ -1,43 +1,67 @@
-libdir = File.dirname(__FILE__)
+libdir = ::File.dirname(__FILE__)
 $LOAD_PATH.unshift(libdir) unless $LOAD_PATH.include?(libdir)
 
 require 'siteleaf/version'
 require 'siteleaf/client'
 require 'siteleaf/entity'
 require 'siteleaf/asset'
+require 'siteleaf/file'
+require 'siteleaf/upload'
 require 'siteleaf/job'
+require 'siteleaf/content'
 require 'siteleaf/page'
 require 'siteleaf/post'
-require 'siteleaf/server'
+require 'siteleaf/collection'
+require 'siteleaf/document'
 require 'siteleaf/site'
-require 'siteleaf/theme'
 require 'siteleaf/user'
 require 'rbconfig'
+require 'uri'
+require 'yaml'
 
 module Siteleaf
 
-  @api_base = 'https://api.siteleaf.com/v1'
+  @api_key = ENV['SITELEAF_API_KEY']
+  @api_secret = ENV['SITELEAF_API_SECRET']
+  @api_base = 'http://api.v2.siteleaf.dev:1337'
+  @api_version = 'v2'
 
   class << self
-    attr_accessor :api_key, :api_secret, :api_base
+    attr_accessor :api_key, :api_secret, :api_base, :api_version
   end
 
-  def self.api_url(url='')
-    "#{@api_base}/#{url}"
+  def self.api_url(url = '')
+    ::File.join(@api_base, @api_version, url)
   end
 
   def self.settings_file
-    File.expand_path('~/.siteleaf')
+    ::File.expand_path('~/.siteleaf.yml')
   end
 
-  def self.load_settings
-    if File.exist?(self.settings_file)
-      config = File.open(self.settings_file) do|file|
-        Marshal.load(file)
+  def self.load_settings(file = self.settings_file)
+    if ::File.exist?(file)
+      settings = ::File.open(file) { |f| YAML.load(f) }
+      
+      [:api_key, :api_secret, :api_base, :api_version].each do |key|
+        self.send "#{key}=", settings[key.to_s] if settings.has_key?(key.to_s)
       end
-      self.api_key = config[:api_key] if config.has_key?(:api_key)
-      self.api_secret = config[:api_secret] if config.has_key?(:api_secret)
+        
+      symbolized_settings = Hash.new
+      settings.each{|k,v| symbolized_settings[k.to_sym] = v}
+      
+      symbolized_settings
     end
+  rescue 
+    nil
+  end
+  
+  def self.save_settings(settings, file = self.settings_file)
+    stringified_settings = Hash.new
+    settings.each{|k,v| stringified_settings[k.to_s] = v}
+    
+    ::File.open(file, 'w') { |f| f.write stringified_settings.to_yaml }
+    
+    settings
   end
 
 end
