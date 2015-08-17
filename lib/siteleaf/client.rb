@@ -33,11 +33,20 @@ module Siteleaf
     def self.execute(method, path, params = nil)
       Siteleaf.load_settings if !Siteleaf.api_key
       begin
-        request = HTTMultiParty.send(method, Siteleaf.api_url(path), {
-          :query => params,
-          :basic_auth => {:username => Siteleaf.api_key, :password => Siteleaf.api_secret},
-          :timeout => 300
-        })
+        if (method == :post || method == :put) && !params.has_key?('file')
+          request = HTTParty.send(method, Siteleaf.api_url(path), {
+            :headers => { 'Content-Type' => 'application/json' },
+            :body => params.to_json,
+            :basic_auth => {:username => Siteleaf.api_key, :password => Siteleaf.api_secret},
+            :timeout => 300
+          })
+        else
+          request = HTTMultiParty.send(method, Siteleaf.api_url(path), {
+            :query => params,
+            :basic_auth => {:username => Siteleaf.api_key, :password => Siteleaf.api_secret},
+            :timeout => 300
+          })
+        end
         if request.respond_to?('parsed_response')
           return request.parsed_response # parse JSON
         else

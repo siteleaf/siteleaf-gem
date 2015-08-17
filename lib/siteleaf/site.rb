@@ -5,8 +5,9 @@ module Siteleaf
     attr_reader :id, :user_id, :created_at, :updated_at
     
     def self.find_by_domain(domain)
-      result = Client.get self.endpoint, {"domain" => domain}
-      self.new(result.first) if result and result.size >= 1
+      results = Client.get self.endpoint
+      result = results.find {|d| d['domain'] == domain }
+      self.new(result) if result
     end
     
     def files

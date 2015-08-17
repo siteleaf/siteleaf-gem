@@ -23,7 +23,7 @@ module Siteleaf
 
   @api_key = ENV['SITELEAF_API_KEY']
   @api_secret = ENV['SITELEAF_API_SECRET']
-  @api_base = 'http://api.v2.siteleaf.dev:1337'
+  @api_base = 'http://api.v2.siteleaf.com'
   @api_version = 'v2'
 
   class << self

@@ -1,8 +1,8 @@
-Siteleaf Gem
-============
+Siteleaf Gem V2
+===============
 
 - [Installation](#installation)
-- [Testing sites locally](#testing-sites-locally)
+- [Using the CLI](#using-the-cli)
 - [Using this gem in your application](#using-this-gem-in-your-application)
 - [Using the API](#using-the-api)
 - [Troubleshooting](#troubleshooting)
@@ -13,17 +13,32 @@ Installation
 
 The Siteleaf gem is available for installation on [Rubygems](https://rubygems.org/gems/siteleaf). To install run:
 
-    gem install siteleaf
+    gem install siteleaf --pre
+    
+Important: make sure to use `--pre` for V2. If maintaining sites with multiple versions, we recommend using a Gemfile.
 
 
-Testing sites locally
----------------------
+Using the CLI
+-------------
 
-The Siteleaf gem allows you to test and develop your sites locally. If using [Pow](http://pow.cx) or [Anvil](http://anvilformac.com), your local website will be automatically set up and can be accessed at `http://yoursite.dev`.
+Important: if using a Gemfile, make sure to prepend all commands with `bundle exec` (e.g. `bundle exec siteleaf auth`).
 
-**(Optional, Mac-only) Install Pow for extra goodness:**
+**Authorize your account:**
 
-    curl get.pow.cx | sh
+    siteleaf auth
+    
+This will create an authorization file located at `~/.siteleaf.yml`. 
+
+Alternatively, you can also use environment variables: `API_KEY=xxx API_SECRET=yyy siteleaf command`
+
+You can also include use a `.siteleaf.yml` file in the root of your project:
+
+```yaml
+---
+api_key: xxx
+api_secret: yyy
+site_id: zzz
+```
 
 **Set up a new site locally:**
 
@@ -35,43 +50,23 @@ This will create a new theme folder called `yoursite.com` in the directory where
 
     siteleaf config yoursite.com
 
-Your site should now be accessible at `http://yoursite.dev`.
-
-*or*
-
-**If you don't want to install Pow, local sites can also be manually run:**
-
-    siteleaf server
-  
-In this case, your local site can be accessed at `http://localhost:9292`.
-
-**Lastly...**
-
-Your local folder should contain at least one template file (`default.html`), for sample themes and documentation see: https://github.com/siteleaf/siteleaf-themes
-
-For new sites, you will also need to create at least one page or post on https://manage.siteleaf.com in order to preview.
-
-**Download your theme:**
-
-To download your theme (or the default theme for new sites) from Siteleaf, run the following command:
-
-    siteleaf pull theme
-
-**Upload your theme:**
+**Upload your files:**
 
 To upload your theme to Siteleaf, run the following command:
 
-    siteleaf push theme
+    siteleaf push
+    
+**Download your files:**
+
+To download your theme (or the default theme for new sites) from Siteleaf, run the following command:
+
+    siteleaf pull
     
 **Publish your site:**
 
 To publish your site changes to your hosting provider, run the following command:
 
     siteleaf publish
-    
-**Switch Siteleaf users or re-authenticate:**
-
-    siteleaf auth
     
 **For a full list of commands, run:**
 
@@ -83,7 +78,7 @@ Using this gem in your application
     
 To use this gem in your application, add the following to your Gemfile:
 
-    gem 'siteleaf', :git => 'git://github.com/siteleaf/siteleaf-gem.git'
+    gem 'siteleaf', :git => 'git://github.com/siteleaf/siteleaf-gem.git', :branch => '2.0.0.pre'
 
 
 Using the API
@@ -141,22 +136,19 @@ page = Siteleaf::Page.find('519719ddcc85910626000001')
 
 # create new post in page
 post = Siteleaf::Post.create({
-  :parent_id => page.id,
   :title     => 'My Post',
   :body      => 'This is my first post.'
 })
 
-# update page, add metadata, add taxonomy
+# update page, add metadata
 post.title = 'New Title'
-post.meta = [ {"key" => "foo", "value" => "bar"} ]
-post.taxonomy = [ {"key" => "Tags", "values" => ["One","Two","Three"]} ]
+post.meta = {'foo' => 'bar'}
 post.save
 
-# upload asset to post (use site_id, page_id, or theme_id to upload to Site, Page, or Theme instead)
-asset = Siteleaf::Asset.create({
-  :post_id  => post.id, 
+# upload file
+asset = Siteleaf::File.create({
   :file     => File.open("~/image.png"), 
-  :filename => "image.png"
+  :path     => "image.png"
 })
 
 # delete post

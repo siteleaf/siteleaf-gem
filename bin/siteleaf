@@ -15,8 +15,8 @@ Commands:
   auth                Login in with your credentials
   c, config DOMAIN    Configure an existing directory
   n, new DOMAIN       Creates new site on siteleaf.net
-  pull theme          Pulls theme files for configured site from Siteleaf
-  push theme          Pushes all files in dir as theme to configured site
+  pull                Pulls files for configured site from Siteleaf
+  push                Pushes all files in dir to configured site
   publish             Publish website to hosting provider
   help                Prints this help document
   version             Prints the siteleaf gem version
@@ -73,7 +73,7 @@ def get_site_id
   end
 end
 
-def get_theme_assets(site_id)
+def pull(site_id)
   # get all the things
   site = Siteleaf::Site.new(id: site_id)
   files = site.files
@@ -106,7 +106,7 @@ def get_theme_assets(site_id)
   puts "=> #{updated_count} file(s) downloaded.\n"
 end
 
-def put_theme_assets(site_id)
+def push(site_id)
   # check config
   config = ::File.exist?('_config.yml') ? YAML::load(::File.read('_config.yml')) : {}
   markdown_ext = (config['markdown_ext'] || 'markdown,mdw,mdwn,md,text').split(',')
@@ -159,7 +159,8 @@ def put_theme_assets(site_id)
         ext = ::File.extname(path).sub('.', '')
 
         response = if !static && markdown_ext.include?(ext) && basedir != '_uploads'
-        
+          
+          # handle content
           metadata = {}
           unless static
             body, metadata = read_frontmatter(path)
@@ -187,16 +188,15 @@ def put_theme_assets(site_id)
           
           if asset && asset.is_a?(model)
             attrs[:id] = asset.id
-            model.new(attrs).save
+            asset = model.new(attrs).save
           else
             asset.delete if asset
-            model.create(attrs)
+            asset = model.create(attrs)
           end
         
         else
         
-          asset.delete if asset
-          
+          # handle assets      
           file = path
           metadata = {}
           unless static
@@ -212,9 +212,13 @@ def put_theme_assets(site_id)
           else
             Siteleaf::File
           end
-          attrs[:metadata] = metadata if metadata && !metadata.empty? 
           
-          model.create(attrs)
+          asset.delete if asset
+          asset = model.create(attrs)
+          if metadata && !metadata.empty? 
+            asset.metadata = metadata
+            asset.save
+          end
           
         end
 
@@ -254,20 +258,6 @@ def put_theme_assets(site_id)
   end
 end
 
-def has_yaml_header?(file)
-  !!(File.open(file, 'rb') { |f| f.read(5) } =~ /\A---\r?\n/)
-end
-
-def read_frontmatter(file)  
-  content = ::File.read(file)
-  metadata = {}
-  if content =~ /\A(---\s*\n.*?\n?)^((---|\.\.\.)\s*$\n?)/m
-    content = $POSTMATCH
-    metadata = YAML.load($1)
-  end
-  return content, metadata
-end
-
 def publish(site_id, quiet = true)
   site = Siteleaf::Site.new(id: site_id)
   job = site.publish
@@ -284,6 +274,20 @@ def publish(site_id, quiet = true)
     end
     puts "=> Publish completed.\n"
   end
+end
+
+def has_yaml_header?(file)
+  !!(File.open(file, 'rb') { |f| f.read(5) } =~ /\A---\r?\n/)
+end
+
+def read_frontmatter(file)  
+  content = ::File.read(file)
+  metadata = {}
+  if content =~ /\A(---\s*\n.*?\n?)^((---|\.\.\.)\s*$\n?)/m
+    content = $POSTMATCH
+    metadata = YAML.load($1)
+  end
+  return content, metadata
 end
 
 case ARGV[0]
@@ -313,33 +317,33 @@ when 'n', 'new'
     end
   end
 when 'pull'
-  case ARGV[1]
-  when 'theme'
+  #case ARGV[1]
+  #when 'theme'
     site_id = get_site_id
     if auth != false
       if site_id
-        get_theme_assets(site_id)
+        pull(site_id)
       else
         puts "Site not configured, run `siteleaf config yoursite.com`.\n"
       end
     end
-  else
-    puts "`#{ARGV[0]}` command not found.\n"
-  end
+  #else
+  #  puts "`#{ARGV[0]}` command not found.\n"
+  #end
 when 'push'
-  case ARGV[1]
-  when 'theme'
+  #case ARGV[1]
+  #when 'theme'
     site_id = get_site_id
     if auth != false
       if site_id
-        put_theme_assets(site_id)
+        push(site_id)
       else
         puts "Site not configured, run `siteleaf config yoursite.com`.\n"
       end
     end
-  else
-    puts "`#{ARGV[0]}` command not found.\n"
-  end
+  #else
+  #  puts "`#{ARGV[0]}` command not found.\n"
+  #end
 when 'publish'
   site_id = get_site_id
   if auth != false
