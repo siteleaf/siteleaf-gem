@@ -63,12 +63,12 @@ end
 def get_site_id
   # check env vars
   [:api_key, :api_secret, :api_base, :api_version].each do |key|
-    if value = ENV[key.to_s.upcase]
+    if value = ENV['SITELEAF_'+key.to_s.upcase]
       Siteleaf.send "#{key}=", value
     end
   end
   
-  ENV['SITE_ID'] || if settings = Siteleaf.load_settings('.siteleaf.yml')
+  ENV['SITELEAF_SITE_ID'] || if settings = Siteleaf.load_settings('.siteleaf.yml')
     settings[:site_id]
   end
 end
