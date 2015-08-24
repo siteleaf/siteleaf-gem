@@ -205,7 +205,7 @@ def push(site_id)
             ::File.open(file, 'w:UTF-8') { |f| f.write(body) }
           end
           
-          attrs = {site_id: site.id, file: ::File.new(path), path: path, static: static}
+          attrs = {site_id: site.id, file: ::File.new(file), path: path, static: static}
           model = if basedir == '_uploads'
             attrs[:path] = path.sub("#{basedir}/",'')
             Siteleaf::Upload
