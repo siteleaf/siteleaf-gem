@@ -29,7 +29,7 @@ Important: if using a Gemfile, make sure to prepend all commands with `bundle ex
     
 This will create an authorization file located at `~/.siteleaf.yml`. 
 
-Alternatively, you can also use environment variables: `API_KEY=xxx API_SECRET=yyy siteleaf command`
+Alternatively, you can also use environment variables: `SITELEAF_API_KEY=xxx SITELEAF_API_SECRET=yyy siteleaf command`
 
 You can also include use a `.siteleaf.yml` file in the root of your project:
 
