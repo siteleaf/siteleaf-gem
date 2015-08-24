@@ -31,7 +31,7 @@ See https://github.com/siteleaf/siteleaf-gem for additional documentation.
 end
 
 def auth(re_auth = false)
-  Siteleaf.load_settings if !re_auth
+  Siteleaf.load_settings if !re_auth && !Siteleaf.api_key
 
   if re_auth or !Siteleaf.api_key
     print 'Enter your Siteleaf e-mail: '
@@ -216,9 +216,9 @@ def push(site_id)
           asset.delete if asset
           asset = model.create(attrs)
           if metadata && !metadata.empty? 
-            asset.metadata = metadata
-            asset.save
+            asset = model.new(id: asset.id, metadata: metadata).save
           end
+          asset
           
         end
 
