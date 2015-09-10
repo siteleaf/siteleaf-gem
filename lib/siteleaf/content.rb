@@ -25,7 +25,7 @@ module Siteleaf
     def frontmatter
       attrs = metadata || {}
       attrs['title'] = title
-      attrs['date'] = Time.parse(published_at).utc.strftime('%F %T %z')
+      attrs['date'] = Time.parse(published_at).utc.strftime('%F %T %z') unless published_at.nil?
       attrs['published'] = false if draft?
       attrs['permalink'] = permalink unless permalink.nil?
   
