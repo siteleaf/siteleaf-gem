@@ -178,21 +178,22 @@ def export(site_id, posts_path = "posts")
   site = Siteleaf::Site.find(site_id)
   site.posts_path = posts_path
   
-  build_jekyll_config(site)
-  get_site_content(site)
-  get_site_uploads(site)
+  export_config(site)
+  export_content(site)
+  export_uploads(site)
 end
 
-def build_jekyll_config(site)
-  print "Generating configuration file..."
+def export_config(site)
   FileUtils.mkdir_p 'export/'
+  
+  print "Generating configuration file..."
   open("export/_config.yml", 'w:UTF-8') do |f|
     f.puts site.to_file
   end
   print "complete.\n"
 end
 
-def get_site_content(site)
+def export_content(site)
   pages = site.pages
 
   pages.each do |page|
@@ -232,7 +233,7 @@ def get_site_content(site)
   end
 end
 
-def get_site_uploads(site)
+def export_uploads(site)
   FileUtils::mkdir_p 'export/_uploads'
 
   if assets = site.assets
@@ -330,7 +331,7 @@ when 'publish'
 when 'export'
   if auth != false
     if site_id = get_site_id
-      print 'Enter your posts path (default "posts"): '
+      print 'Enter your main posts path (default "posts"): '
       posts_path = $stdin.gets.chomp
       export(site_id, posts_path)
     else

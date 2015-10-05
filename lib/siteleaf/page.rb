@@ -48,7 +48,7 @@ module Siteleaf
     def frontmatter
       attrs = {}
       attrs['title'] = title
-      attrs['date'] = Time.parse(published_at).utc.strftime('%F %T %z') unless published_at.nil?
+      attrs['date'] = Time.parse(published_at).utc
       attrs['published'] = false if !published?
       
       meta.each{|m| attrs[m['key']] = m['value'].to_s.gsub("\r\n","\n")} unless meta.nil?
