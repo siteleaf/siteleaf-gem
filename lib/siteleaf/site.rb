@@ -1,7 +1,7 @@
 module Siteleaf
   class Site < Entity
 
-    attr_accessor :title, :domain, :timezone, :meta
+    attr_accessor :title, :domain, :timezone, :meta, :posts_path
     attr_reader :id, :user_id, :created_at, :updated_at
     
     def self.find_by_domain(domain)
@@ -43,6 +43,64 @@ module Siteleaf
     def publish
       result = Client.post "sites/#{self.id}/publish", {}
       Job.new(id: result.parsed_response["job_id"]) if result
+    end
+    
+    def posts_path
+      @posts_path || 'posts'
+    end
+    
+    def to_file
+      frontmatter
+    end
+  
+    protected
+  
+    def frontmatter
+      attrs = {}
+      attrs['title'] = title
+      attrs['url'] = "http://#{domain}"
+      
+      meta.each{|m| attrs[m['key']] = m['value'].to_s.gsub("\r\n","\n")} unless meta.nil?
+      
+      attrs['timezone'] = timezone
+      attrs['permalink'] = 'pretty'
+      
+      # output uploads using v1 /assets path
+      attrs['collections'] = {
+        'uploads' => {
+          'output' => true, 
+          'permalink' => '/assets/:path'
+        }
+      }
+      
+      # use collections for any set of posts not called "posts"
+      pages.each do |page|
+        path = page.url.sub('/','').gsub('/','_')
+        if path != posts_path && page.posts.size > 0
+          attrs['collections'][path] = {'output' => true}
+          # output permalink for non-standard urls (e.g. posts inside sub-pages)
+          attrs['collections'][path]['permalink'] = "#{page.url}/:path" if path != page.slug
+        end
+      end
+      
+      # set permalink style for posts
+      attrs['defaults'] = {
+        'scope' => {
+          'path' => '', 
+          'type' => 'posts'
+        }, 
+        'values' => {
+          'permalink' => "/#{posts_path}/:title/" 
+        }
+      }
+      
+      # markdown defaults to match v1 rendering
+      attrs['markdown'] = 'redcarpet'
+      attrs['redcarpet'] = {
+        'extensions' => ['autolink', 'fenced_code_blocks', 'lax_spacing', 'strikethrough', 'superscript', 'tables', 'footnotes', 'highlight']
+      }
+   
+      attrs.empty? ? "---\n".freeze : attrs.to_yaml
     end
     
   end

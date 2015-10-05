@@ -31,5 +31,36 @@ module Siteleaf
       Page.find(self.parent_id) if self.parent_id
     end
     
+    def draft?
+      visibility == 'draft'
+    end
+    
+    def published?
+      visibility == 'visible'
+    end
+    
+    def to_file
+      [frontmatter, "---\n\n".freeze, body].join('')
+    end
+  
+    protected
+  
+    def frontmatter
+      attrs = {}
+      attrs['title'] = title
+      attrs['date'] = Time.parse(published_at).utc.strftime('%F %T %z') unless published_at.nil?
+      attrs['published'] = false if !published?
+      
+      meta.each{|m| attrs[m['key']] = m['value'].to_s.gsub("\r\n","\n")} unless meta.nil?
+      
+      if defined?(taxonomy) && !taxonomy.nil?
+        taxonomy.each do |t| 
+          attrs[t['key']] = t['values'].map{|v| v['value']} unless t['values'].empty?
+        end 
+      end
+  
+      attrs.empty? ? "---\n".freeze : attrs.to_yaml
+    end
+    
   end
 end

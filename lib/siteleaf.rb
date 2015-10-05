@@ -13,6 +13,8 @@ require 'siteleaf/site'
 require 'siteleaf/theme'
 require 'siteleaf/user'
 require 'rbconfig'
+require 'uri'
+require 'yaml'
 
 module Siteleaf
 
