@@ -9,12 +9,17 @@ module Siteleaf
     end
     
     def draft?
-      !published?
+      visibility == 'draft'
     end
     
-    def published?
-      published != false
+    def hidden?
+      visibility == 'hidden'
     end
+    
+    def visible?
+      visibility == 'visible'
+    end
+    alias_method :published?, :visible?
 
     def to_file
       [frontmatter, "---\n\n".freeze, body].join('')
@@ -25,8 +30,8 @@ module Siteleaf
     def frontmatter
       attrs = metadata || {}
       attrs['title'] = title
-      attrs['date'] = Time.parse(published_at).utc.strftime('%F %T %z') unless published_at.nil?
-      attrs['published'] = false if draft?
+      attrs['date'] = Time.parse(published_at).utc unless published_at.nil?
+      attrs['published'] = false if hidden?
       attrs['permalink'] = permalink unless permalink.nil?
   
       attrs.empty? ? "---\n".freeze : attrs.to_yaml

@@ -3,7 +3,6 @@
 require 'siteleaf'
 require 'fileutils'
 require 'open-uri'
-require 'digest/sha1'
 require 'tempfile'
 require 'yaml'
 
@@ -75,18 +74,15 @@ end
 
 def pull(site_id)
   # get all the things
-  site = Siteleaf::Site.new(id: site_id)
+  site = Siteleaf::Site.find(site_id)
   files = site.files
   uploads = site.uploads
   pages = site.pages
   posts = site.posts
   collections = site.collections
-  documents = []
-  collections.each do |collection|
-    documents += collection.documents
-  end
+  documents = collections.map{ |collection| collection.documents }.flatten
   
-  assets = files + uploads + pages + posts + documents
+  assets = [site] + files + uploads + pages + posts + documents
   
   updated_count = 0
   
@@ -134,14 +130,13 @@ def push(site_id)
   existing_collections = config['collections'] || {} 
   existing_collections.each do |label, metadata|
     path = label.gsub(/[^a-z0-9_\-\.]/i, '')
-    unless collections.find {|c| c.path == path } 
+    unless collections.find {|c| c.path == path }
       # create any new collections
       output = metadata.delete('output')
       permalink = metadata.delete('permalink')
       collections << Siteleaf::Collection.create(site_id: site.id, title: label, path: path, permalink: permalink, metadata: metadata)
     end
   end
-  collection_dirs = collections.map{|c| c.basename }
   
   # upload files
   paths = Dir.glob("**/*")
@@ -149,13 +144,26 @@ def push(site_id)
     if !::File.directory?(path) && !ignore_paths.any?{|i| ::File.fnmatch?(i, path, File::FNM_CASEFOLD) || ::File.fnmatch?(i, ::File.basename(path), File::FNM_CASEFOLD) }
       asset = assets.find{|a| a.filename == path }
       sha = Digest::SHA1.hexdigest(::File.read(path))
-      if asset.nil? || asset.sha != sha
+      collection_id = nil
+      basedir = ::File.dirname(path).split('/').first
+      
+      model = if basedir == '_drafts'
+        Siteleaf::Post
+      elsif basedir == '_posts'
+        Siteleaf::Post
+      elsif collection = collections.find {|c| basedir == "_#{c.path}" }
+        collection_id = collection.id
+        Siteleaf::Document
+      else
+        Siteleaf::Page
+      end
+      
+      if asset.nil? || asset.sha != sha || !asset.is_a?(model)
         
         print "Uploading #{path}..."
         
         static = !has_yaml_header?(path)
         basename = ::File.basename(path)
-        basedir = ::File.dirname(path).split('/').first
         ext = ::File.extname(path).sub('.', '')
 
         response = if !static && markdown_ext.include?(ext) && basedir != '_uploads'
@@ -172,18 +180,15 @@ def push(site_id)
           attrs = {site_id: site.id, title: title, path: clean_path, static: static}
           attrs[:body] = body if body && body != ""
           attrs[:metadata] = metadata if metadata && !metadata.empty? 
-          model = if basedir == '_drafts'
+          
+          if basedir == '_drafts'
             attrs[:visibility] = 'draft'
-            Siteleaf::Post
           elsif basedir == '_posts'
             attrs[:visibility] = (metadata['published'].delete == false) ? 'hidden' : 'visible'
-            Siteleaf::Post
-          elsif collection = collections.find {|c| c.basename == basedir }
-            attrs[:collection_id] = collection.id
-            Siteleaf::Document
+          elsif model == Siteleaf::Document
+            attrs[:collection_id] = collection_id
           else
             attrs[:path] = path.sub(".#{ext}",'')
-            Siteleaf::Page
           end
           
           if asset && asset.is_a?(model)

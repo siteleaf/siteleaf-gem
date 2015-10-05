@@ -9,7 +9,7 @@ module Siteleaf
 
     def self.all
       result = Client.get "#{self.endpoint}"
-      result.map { |r| self.new(r) } if result
+      result.map { |r| self.new(r) } if result.is_a? Array
     end
 
     def self.find(id)
