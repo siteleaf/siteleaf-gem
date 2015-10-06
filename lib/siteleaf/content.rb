@@ -22,7 +22,7 @@ module Siteleaf
     alias_method :published?, :visible?
 
     def to_file
-      [frontmatter, "---\n\n".freeze, body].join('')
+      frontmatter + "---\n\n".freeze + body.to_s
     end
   
     protected

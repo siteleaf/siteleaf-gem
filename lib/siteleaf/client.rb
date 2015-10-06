@@ -33,7 +33,7 @@ module Siteleaf
     def self.execute(method, path, params = nil)
       Siteleaf.load_settings if !Siteleaf.api_key
       begin
-        if (method == :post || method == :put) && !params.has_key?('file')
+        if (method == :post || method == :put) && !params.has_key?('file') && !params.has_key?(:file)
           request = HTTParty.send(method, Siteleaf.api_url(path), {
             :headers => { 'Content-Type' => 'application/json' },
             :body => params.to_json,

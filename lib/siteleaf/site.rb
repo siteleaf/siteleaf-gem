@@ -10,6 +10,11 @@ module Siteleaf
       self.new(result) if result
     end
     
+    def self.import(attrs)
+      result = Client.post "import", attrs
+      Job.new(id: result["job_id"]) if result
+    end
+    
     def files
       result = Client.get "sites/#{self.id}/files"
       result.map { |r| File.new(r) } if result.is_a? Array
@@ -37,7 +42,11 @@ module Siteleaf
     
     def publish
       result = Client.post "sites/#{self.id}/publish", {}
-      Job.new(id: result.parsed_response["job_id"]) if result
+      Job.new(id: result["job_id"]) if result
+    end
+    
+    def full_url
+      "http://#{domain}"
     end
     
     def filename
@@ -54,6 +63,10 @@ module Siteleaf
   
     protected
     
+    def uploads_collection
+      Collection.new('title' => 'Uploads', 'path' => 'uploads', 'output' => true)
+    end
+    
     def defaults_config
       defaults.map do |d|
         { 'scope' => {}, 'values' => d['values'] }.tap do |default|
@@ -64,7 +77,7 @@ module Siteleaf
     end
     
     def collections_config
-      collections.each_with_object({'uploads' => {'output' => true}}) do |collection, hash|
+      collections.unshift(uploads_collection).each_with_object({}) do |collection, hash|
         hash[collection.path] = collection.metadata || {}
         hash[collection.path]['title'] = collection.title
         hash[collection.path]['output'] = collection.output
@@ -75,11 +88,11 @@ module Siteleaf
     def config
       attrs = metadata || {}
       attrs['title'] = title
-      attrs['url'] = "http://#{domain}"
+      attrs['url'] = full_url
       attrs['timezone'] = timezone
       attrs['collections'] = collections_config
       attrs['defaults'] = defaults_config unless defaults.empty?
-      attrs.empty? ? "---\n".freeze : attrs.to_yaml
+      attrs.to_yaml
     end
     
   end

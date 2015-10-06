@@ -128,13 +128,14 @@ def push(site_id)
   
   # create collections
   existing_collections = config['collections'] || {} 
-  existing_collections.each do |label, metadata|
-    path = label.gsub(/[^a-z0-9_\-\.]/i, '')
+  existing_collections.each do |path, metadata|
+    path = path.gsub(/[^a-z0-9_\-\.]/i, '')
+    title = metadata['title'] || path
     unless collections.find {|c| c.path == path }
       # create any new collections
       output = metadata.delete('output')
       permalink = metadata.delete('permalink')
-      collections << Siteleaf::Collection.create(site_id: site.id, title: label, path: path, permalink: permalink, metadata: metadata)
+      collections << Siteleaf::Collection.create(site_id: site.id, title: path, path: path, permalink: permalink, metadata: metadata)
     end
   end
   
@@ -142,31 +143,33 @@ def push(site_id)
   paths = Dir.glob("**/*")
   paths.each do |path|
     if !::File.directory?(path) && !ignore_paths.any?{|i| ::File.fnmatch?(i, path, File::FNM_CASEFOLD) || ::File.fnmatch?(i, ::File.basename(path), File::FNM_CASEFOLD) }
+    
       asset = assets.find{|a| a.filename == path }
-      sha = Digest::SHA1.hexdigest(::File.read(path))
-      collection_id = nil
       basedir = ::File.dirname(path).split('/').first
+      basename = ::File.basename(path)
+      ext = ::File.extname(path).sub('.', '')
+      sha = Digest::SHA1.hexdigest(::File.read(path))
+      static = !has_yaml_header?(path)
+      collection_id = nil
       
-      model = if basedir == '_drafts'
+      model = if ['_drafts', '_posts'].include?(basedir)
         Siteleaf::Post
-      elsif basedir == '_posts'
-        Siteleaf::Post
+      elsif basedir == '_uploads'
+        Siteleaf::Upload
       elsif collection = collections.find {|c| basedir == "_#{c.path}" }
         collection_id = collection.id
         Siteleaf::Document
-      else
+      elsif !static && markdown_ext.include?(ext)
         Siteleaf::Page
+      else
+        Siteleaf::File
       end
       
       if asset.nil? || asset.sha != sha || !asset.is_a?(model)
         
         print "Uploading #{path}..."
-        
-        static = !has_yaml_header?(path)
-        basename = ::File.basename(path)
-        ext = ::File.extname(path).sub('.', '')
-
-        response = if !static && markdown_ext.include?(ext) && basedir != '_uploads'
+      
+        response = if [Siteleaf::Post, Siteleaf::Document, Siteleaf::Page].include?(model)
           
           # handle content
           metadata = {}
@@ -213,9 +216,6 @@ def push(site_id)
           attrs = {site_id: site.id, file: ::File.new(file), path: path, static: static}
           model = if basedir == '_uploads'
             attrs[:path] = path.sub("#{basedir}/",'')
-            Siteleaf::Upload
-          else
-            Siteleaf::File
           end
           
           asset.delete if asset
@@ -260,6 +260,23 @@ def push(site_id)
       end
       puts "=> #{missing_assets.size} file(s) deleted.\n"
     end
+  end
+end
+
+def import(file, quiet = true)
+  job = Siteleaf::Site.import(file: ::File.new(file))
+  
+  if quiet
+    puts "=> Import queued.\n"
+  else
+    last_msg = nil
+    job.stream do |s|
+      if (msg = s["message"]) && (msg != last_msg)
+        puts msg
+        last_msg = msg
+      end
+    end
+    puts "=> Import completed.\n"
   end
 end
 
@@ -357,6 +374,19 @@ when 'publish'
       publish(site_id, quiet)
     else
       puts "Site not configured, run `siteleaf config yoursite.com`.\n"
+    end
+  end
+when 'import'
+  site_id = get_site_id
+  if auth != false
+    file = ARGV[1]
+    if File.extname(file) != '.zip'
+      puts "Import file must be ZIP format.\n"
+    elsif !File.exist?(file)
+      puts "Import file not found.\n"
+    else
+      quiet = %w[-q --quiet].include?(ARGV[2]) && ARGV[2]
+      import(file, quiet)
     end
   end
 else
