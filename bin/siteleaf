@@ -108,7 +108,7 @@ def push(site_id)
   markdown_ext = (config['markdown_ext'] || 'markdown,mdw,mdwn,md,text').split(',')
   
   # get all the things
-  site = Siteleaf::Site.new(id: site_id)
+  site = Siteleaf::Site.find(site_id)
   files = site.files
   uploads = site.uploads
   pages = site.pages
@@ -126,16 +126,47 @@ def push(site_id)
   ignore_paths += ::File.read('.siteleafignore').split(/\r?\n/) if ::File.exists?('.siteleafignore')
   ignore_paths += config['exclude'] if config['exclude'].is_a? Array
   
+  # push site config
+  path = '_config.yml'
+  if site.sha != Digest::SHA1.hexdigest(::File.read(path))
+    print "Uploading #{path}..."
+    
+    metadata = config.dup
+    metadata.delete('collections')
+    attrs = { 'id' => site_id }
+    attrs['title'] = metadata.delete('title') if metadata['title']
+    attrs['domain'] = metadata.delete('url') if metadata['url']
+    attrs['timezone'] = metadata.delete('timezone') if metadata['timezone']
+    attrs['defaults'] = metadata.delete('defaults').map{|default|
+      {
+        'path' => default['scope']['path'],
+        'type' => default['scope']['type'],
+        'values' => default['values']
+      }
+    } if metadata['defaults']
+    attrs['metadata'] = metadata
+    
+    response = Siteleaf::Site.new(attrs).save
+    
+    if error = !response || response.error || response.message
+      print (error) ? "error: #{error}\n" : "error.\n"
+      return
+    else
+      updated_count += 1
+      print "complete.\n"
+    end
+  end
+  
   # create collections
   existing_collections = config['collections'] || {} 
   existing_collections.each do |path, metadata|
     path = path.gsub(/[^a-z0-9_\-\.]/i, '')
-    title = metadata['title'] || path
     unless collections.find {|c| c.path == path }
       # create any new collections
+      title = metadata.delete('title') || path
       output = metadata.delete('output')
       permalink = metadata.delete('permalink')
-      collections << Siteleaf::Collection.create(site_id: site.id, title: path, path: path, permalink: permalink, metadata: metadata)
+      collections << Siteleaf::Collection.create(site_id: site.id, title: title, path: path, permalink: permalink, metadata: metadata)
     end
   end
   
@@ -214,7 +245,7 @@ def push(site_id)
           end
           
           attrs = {site_id: site.id, file: ::File.new(file), path: path, static: static}
-          model = if basedir == '_uploads'
+          if basedir == '_uploads'
             attrs[:path] = path.sub("#{basedir}/",'')
           end
           
@@ -229,7 +260,7 @@ def push(site_id)
 
         if error = !response || response.error || response.message
           print (error) ? "error: #{error}\n" : "error.\n"
-          break
+          return
         else
           updated_count += 1
           print "complete.\n"
