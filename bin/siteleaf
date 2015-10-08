@@ -158,15 +158,24 @@ def push(site_id)
   end
   
   # create collections
-  existing_collections = config['collections'] || {} 
-  existing_collections.each do |path, metadata|
+  collection_paths = []
+  collections_config = config['collections'] || {} 
+  collections_config.each do |path, metadata|
     path = path.gsub(/[^a-z0-9_\-\.]/i, '')
-    unless collections.find {|c| c.path == path }
+    collection_paths << "_#{path}"
+    collection = collections.find{|c| c.path.casecmp(path) == 0 }
+    title = metadata.delete('title') || path
+    output = metadata.delete('output')
+    permalink = metadata.delete('permalink')
+
+    if !collection
       # create any new collections
-      title = metadata.delete('title') || path
-      output = metadata.delete('output')
-      permalink = metadata.delete('permalink')
-      collections << Siteleaf::Collection.create(site_id: site.id, title: title, path: path, permalink: permalink, metadata: metadata)
+      collections << Siteleaf::Collection.create(site_id: site.id, title: title, path: path, output: output, permalink: permalink, metadata: metadata)
+    elsif collection.title != title || collection.output != output || collection.permalink != permalink || collection.metadata != metadata
+      # update any changed collections
+      collections.delete(collection)
+      colllection = Siteleaf::Collection.new(id: collection.id, title: title, path: path, output: output, permalink: permalink, metadata: metadata).save
+      collections << colllection
     end
   end
   
@@ -175,7 +184,7 @@ def push(site_id)
   paths.each do |path|
     if !::File.directory?(path) && !ignore_paths.any?{|i| ::File.fnmatch?(i, path, File::FNM_CASEFOLD) || ::File.fnmatch?(i, ::File.basename(path), File::FNM_CASEFOLD) }
     
-      asset = assets.find{|a| a.filename == path }
+      asset = assets.find{|a| a.filename.casecmp(path) == 0 }
       basedir = ::File.dirname(path).split('/').first
       basename = ::File.basename(path)
       ext = ::File.extname(path).sub('.', '')
@@ -187,7 +196,7 @@ def push(site_id)
         Siteleaf::Post
       elsif basedir == '_uploads'
         Siteleaf::Upload
-      elsif collection = collections.find {|c| basedir == "_#{c.path}" }
+      elsif collection_paths.include?(basedir) && (collection = collections.find {|c| basedir == "_#{c.path}" })
         collection_id = collection.id
         Siteleaf::Document
       elsif !static && markdown_ext.include?(ext)
@@ -196,7 +205,7 @@ def push(site_id)
         Siteleaf::File
       end
       
-      if asset.nil? || asset.sha != sha || !asset.is_a?(model)
+      if asset.nil? || asset.sha != sha || !asset.is_a?(model) || asset.filename != path
         
         print "Uploading #{path}..."
       
@@ -272,8 +281,11 @@ def push(site_id)
   
   # check for old files
   missing_assets = []
+  collections.each do |collection| 
+    missing_assets << collection if !collection_paths.find{|p| p.casecmp("_#{collection.path}") == 0}
+  end
   assets.each do |asset| 
-    missing_assets << asset if !paths.include?(asset.filename)
+    missing_assets << asset if !paths.find{|p| p.casecmp(asset.filename) == 0 }
   end
   if missing_assets.empty?
     puts "=> #{updated_count} file(s) uploaded.\n"

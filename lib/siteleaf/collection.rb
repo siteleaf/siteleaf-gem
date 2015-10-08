@@ -21,5 +21,9 @@ module Siteleaf
       output == true
     end
     
+    def filename
+      path
+    end
+    
   end
 end
