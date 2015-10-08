@@ -33,7 +33,7 @@ def auth(re_auth = false)
   Siteleaf.load_settings if !re_auth && !Siteleaf.api_key
 
   if re_auth or !Siteleaf.api_key
-    print 'Enter your Siteleaf e-mail: '
+    print 'Enter your Siteleaf email: '
     email = $stdin.gets.chomp
 
     print 'Enter your Siteleaf password: '
@@ -48,7 +48,7 @@ def auth(re_auth = false)
       puts "=> Gem authorized." if re_auth
       return true
     else
-      puts auth['error'] || "Could not authorize, check your e-mail or password."
+      puts auth['error'] || "Could not authorize, check your email or password."
       return false
     end
   end
