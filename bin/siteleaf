@@ -89,7 +89,7 @@ def get_theme_assets(site_id)
   if assets = Siteleaf::Theme.assets_by_site_id(site_id)
     updated_count = 0
     assets.each do |asset|
-      if File.exist?(asset.filename) && (asset.checksum == Digest::MD5.hexdigest(File.read(asset.filename)))
+      if File.exist?(asset.filename) && (asset.checksum == Digest::MD5.hexdigest(IO.binread(asset.filename)))
         # file is up to date
       else
         print "Downloading #{asset.filename}..."
@@ -116,7 +116,7 @@ def put_theme_assets(site_id)
   paths.each do |path|
     if !File.directory?(path) && !ignore_paths.any?{|i| File.fnmatch?(i, path, File::FNM_CASEFOLD) || File.fnmatch?(i, File.basename(path), File::FNM_CASEFOLD) }
       asset = assets.find{|a| a.filename == path }
-      if asset.nil? || (asset && asset.checksum != Digest::MD5.hexdigest(File.read(path)))
+      if asset.nil? || (asset && asset.checksum != Digest::MD5.hexdigest(IO.binread(path)))
         print "Uploading #{path}..."
         asset.delete if asset
         if response = Siteleaf::Asset.create({:site_id => site_id, :theme_id => theme.id, :file => File.new(path), :filename => path})
@@ -173,23 +173,26 @@ def publish(site_id, quiet = true)
 end
 
 def export(site_id, posts_path = "posts")
+  FileUtils.mkdir_p 'export'
   posts_path = "posts" if posts_path == ""
   
   site = Siteleaf::Site.find(site_id)
   site.posts_path = posts_path
   
-  export_config(site)
-  export_content(site)
   export_uploads(site)
+  export_content(site)
+  export_config(site)
 end
 
 def export_config(site)
-  FileUtils.mkdir_p 'export/'
+  filename = site.filename
+  print "Exporting #{filename}..."
   
-  print "Generating configuration file..."
-  open("export/_config.yml", 'w:UTF-8') do |f|
+  filename = File.join("export", filename)
+  open(filename, 'w:UTF-8') do |f|
     f.puts site.to_file
   end
+  
   print "complete.\n"
 end
 
@@ -199,35 +202,28 @@ def export_content(site)
   pages.each do |page|
     # export non-blank pages
     unless page.body.to_s == "" and page.meta.empty?
-      print "Exporting #{page.title}..."
-      filename = "export/#{page.url}.markdown"
+      filename = page.filename
+      print "Exporting #{filename}..."
+      
+      filename = File.join("export", filename)
       FileUtils.mkdir_p File.dirname(filename)
       open(filename, 'w:UTF-8') do |f|
         f.puts page.to_file
       end
+      
       print "complete.\n"
     end
 
     page.posts.each do |post|
-      print "Exporting #{post.title}..."
-
-      filename = "#{post.slug}.markdown"
-      path = page.url.sub('/','').gsub('/','_')
-      if path == site.posts_path 
-        if post.draft?
-          path = 'drafts'
-        else
-          path = 'posts'
-          date = Time.parse(post.published_at).strftime('%Y-%m-%d')
-          filename = "#{date}-#{filename}"
-        end
-      end
-      filename = "export/_#{path}/#{filename}"
-
+      filename = post.filename(site.posts_path)
+      print "Exporting #{filename}..."
+      
+      filename = File.join("export", filename)
       FileUtils.mkdir_p File.dirname(filename)
       open(filename, 'w:UTF-8') do |f|
         f.puts post.to_file
       end
+      
       print "complete.\n"
     end
   end
@@ -238,8 +234,8 @@ def export_uploads(site)
 
   if assets = site.assets
     assets.each do |asset|
-      asset_path = "export/_uploads/#{asset.filename}"
-      arr_path = asset_path.split('/')
+      filename = File.join("export", "_uploads", asset.filename)
+      arr_path = filename.split('/')
 
       # Make subdirectories if needed
       if arr_path.length > 3
@@ -247,12 +243,12 @@ def export_uploads(site)
         FileUtils::mkdir_p subdir
       end
 
-      if !File.exist?(asset_path) or (asset.checksum != Digest::MD5.hexdigest(File.read(asset_path)))
-        print "Exporting #{asset.filename}..."
+      if !File.exist?(filename) or (asset.checksum != Digest::MD5.hexdigest(IO.binread(filename)))
+        print "Exporting #{filename}..."
         
         file = open(asset.file['url'], 'r:UTF-8') { |f| f.read }
-        FileUtils.mkdir_p(File.dirname(asset_path))
-        File.open(asset_path, 'w:UTF-8') { |f| f.write(file) }
+        FileUtils.mkdir_p(File.dirname(filename))
+        File.open(filename, 'w:UTF-8') { |f| f.write(file) }
 
         print "complete.\n"
       end

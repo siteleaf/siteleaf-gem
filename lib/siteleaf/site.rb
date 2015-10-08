@@ -49,13 +49,18 @@ module Siteleaf
       @posts_path || 'posts'
     end
     
+    def filename
+      "_config.yml"
+    end
+    
     def to_file
-      frontmatter
+      assets = Dir.glob("export/_uploads/**/*").each_with_object({}) { |var, hash| hash[var.sub('export/_uploads','/assets')] = var.sub('export/_uploads','/uploads') }
+      config.gsub(Regexp.union(assets.keys), assets)
     end
   
     protected
   
-    def frontmatter
+    def config
       attrs = {}
       attrs['title'] = title
       attrs['url'] = "http://#{domain}"
@@ -68,8 +73,8 @@ module Siteleaf
       # output uploads using v1 /assets path
       attrs['collections'] = {
         'uploads' => {
-          'output' => true, 
-          'permalink' => '/assets/:path'
+          'title' => 'Uploads', 
+          'output' => true
         }
       }
       
