@@ -1,3 +1,3 @@
 module Siteleaf
-  VERSION = "0.9.23"
+  VERSION = "1.0.0"
 end

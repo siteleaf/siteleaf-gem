@@ -31,5 +31,41 @@ module Siteleaf
       Page.find(self.parent_id) if self.parent_id
     end
     
+    def draft?
+      visibility == 'draft'
+    end
+    
+    def published?
+      visibility == 'visible'
+    end
+    
+    def filename
+      "#{url.sub('/','')}.markdown"
+    end
+    
+    def to_file
+      assets = Dir.glob("export/_uploads/**/*").each_with_object({}) { |var, hash| hash[var.sub('export/_uploads','/assets')] = var.sub('export/_uploads','/uploads') }
+      (frontmatter + "---\n\n".freeze + body.to_s).gsub(Regexp.union(assets.keys), assets)
+    end
+  
+    protected
+  
+    def frontmatter
+      attrs = {}
+      attrs['title'] = title
+      attrs['date'] = Time.parse(published_at).utc
+      attrs['published'] = false if !published?
+      
+      meta.each{|m| attrs[m['key']] = m['value'].to_s.gsub("\r\n","\n")} unless meta.nil?
+      
+      if defined?(taxonomy) && !taxonomy.nil?
+        taxonomy.each do |t| 
+          attrs[t['key']] = t['values'].map{|v| v['value']} unless t['values'].empty?
+        end 
+      end
+  
+      attrs.empty? ? "---\n".freeze : attrs.to_yaml
+    end
+    
   end
 end

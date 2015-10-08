@@ -12,7 +12,10 @@ require 'siteleaf/server'
 require 'siteleaf/site'
 require 'siteleaf/theme'
 require 'siteleaf/user'
+require 'patches/time_with_zone_encode_with'
 require 'rbconfig'
+require 'uri'
+require 'yaml'
 
 module Siteleaf
 

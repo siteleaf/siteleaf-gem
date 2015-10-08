@@ -2,11 +2,13 @@ Siteleaf Gem
 ============
 
 - [Installation](#installation)
-- [Testing sites locally](#testing-sites-locally)
+- [Using the CLI](#using-the-cli)
 - [Using this gem in your application](#using-this-gem-in-your-application)
 - [Using the API](#using-the-api)
+- [Exporting your site](#exporting-your-site)
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
+
 
 Installation
 ------------
@@ -16,8 +18,10 @@ The Siteleaf gem is available for installation on [Rubygems](https://rubygems.or
     gem install siteleaf
 
 
-Testing sites locally
----------------------
+Using the CLI
+-------------
+
+Important: if using a Gemfile, make sure to prepend all commands with bundle exec (e.g. bundle exec siteleaf auth).
 
 The Siteleaf gem allows you to test and develop your sites locally. If using [Pow](http://pow.cx) or [Anvil](http://anvilformac.com), your local website will be automatically set up and can be accessed at `http://yoursite.dev`.
 
@@ -84,6 +88,7 @@ Using this gem in your application
 To use this gem in your application, add the following to your Gemfile:
 
     gem 'siteleaf', :git => 'git://github.com/siteleaf/siteleaf-gem.git'
+
 
 
 Using the API
@@ -165,6 +170,19 @@ post.delete
 # delete page by id
 Siteleaf::Page.delete('519719ddcc85910626000001')
 ```
+
+
+Exporting your site
+---------------------------------
+
+You can backup or export your Siteleaf content to Jekyll-compatible format by running the following command:
+
+    siteleaf export
+    
+You will be asked to enter your main posts path, this is typically `posts` (default) or `blog` (if your posts are located at `/blog/hello-world` for example). If your site does not have any posts, leave blank to use the default.
+
+All content including Pages, Posts, Site Metadata, and Assets will be exported to a sub-folder called `export`. Theme files are not included in the export.
+
 
 Troubleshooting
 ------------

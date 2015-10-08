@@ -17,6 +17,7 @@ Commands:
   pull theme          Pulls theme files for configured site from Siteleaf
   push theme          Pushes all files in dir as theme to configured site
   publish             Publish website to hosting provider
+  export              Exports site content to Jekyll-compatible format
   help                Prints this help document
   version             Prints the siteleaf gem version
 
@@ -88,13 +89,13 @@ def get_theme_assets(site_id)
   if assets = Siteleaf::Theme.assets_by_site_id(site_id)
     updated_count = 0
     assets.each do |asset|
-      if File.exist?(asset.filename) && (asset.checksum == Digest::MD5.hexdigest(File.read(asset.filename)))
+      if File.exist?(asset.filename) && (asset.checksum == Digest::MD5.hexdigest(IO.binread(asset.filename)))
         # file is up to date
       else
         print "Downloading #{asset.filename}..."
-        file = open(asset.file['url'], /^1\.8/.match(RUBY_VERSION) ? 'r' : 'r:UTF-8') { |f| f.read }
+        file = open(asset.file['url'], 'r:UTF-8') { |f| f.read }
         FileUtils.mkdir_p(File.dirname(asset.filename))
-        File.open(asset.filename, /^1\.8/.match(RUBY_VERSION) ? 'w' : 'w:UTF-8') { |f| f.write(file) }
+        File.open(asset.filename, 'w:UTF-8') { |f| f.write(file) }
         updated_count += 1
         print "complete.\n"
       end
@@ -109,13 +110,13 @@ def put_theme_assets(site_id)
   updated_count = 0
   ignore_paths = ['config.ru', '.*']
   ignore_paths += File.read('.siteleafignore').split(/\r?\n/) if File.exists?('.siteleafignore')
-  
+
   # upload files
   paths = Dir.glob("**/*")
   paths.each do |path|
     if !File.directory?(path) && !ignore_paths.any?{|i| File.fnmatch?(i, path, File::FNM_CASEFOLD) || File.fnmatch?(i, File.basename(path), File::FNM_CASEFOLD) }
       asset = assets.find{|a| a.filename == path }
-      if asset.nil? || (asset && asset.checksum != Digest::MD5.hexdigest(File.read(path)))
+      if asset.nil? || (asset && asset.checksum != Digest::MD5.hexdigest(IO.binread(path)))
         print "Uploading #{path}..."
         asset.delete if asset
         if response = Siteleaf::Asset.create({:site_id => site_id, :theme_id => theme.id, :file => File.new(path), :filename => path})
@@ -128,10 +129,10 @@ def put_theme_assets(site_id)
       end
     end
   end
-  
+
   # check for old files
   missing_assets = []
-  assets.each do |asset| 
+  assets.each do |asset|
     missing_assets << asset if !paths.include?(asset.filename)
   end
   if missing_assets.empty?
@@ -168,6 +169,90 @@ def publish(site_id, quiet = true)
       end
     end
     puts "=> Publish completed.\n"
+  end
+end
+
+def export(site_id, posts_path = "posts")
+  FileUtils.mkdir_p 'export'
+  posts_path = "posts" if posts_path == ""
+  
+  site = Siteleaf::Site.find(site_id)
+  site.posts_path = posts_path
+  
+  export_uploads(site)
+  export_content(site)
+  export_config(site)
+end
+
+def export_config(site)
+  filename = site.filename
+  print "Exporting #{filename}..."
+  
+  filename = File.join("export", filename)
+  open(filename, 'w:UTF-8') do |f|
+    f.puts site.to_file
+  end
+  
+  print "complete.\n"
+end
+
+def export_content(site)
+  pages = site.pages
+
+  pages.each do |page|
+    # export non-blank pages
+    unless page.body.to_s == "" and page.meta.empty?
+      filename = page.filename
+      print "Exporting #{filename}..."
+      
+      filename = File.join("export", filename)
+      FileUtils.mkdir_p File.dirname(filename)
+      open(filename, 'w:UTF-8') do |f|
+        f.puts page.to_file
+      end
+      
+      print "complete.\n"
+    end
+
+    page.posts.each do |post|
+      filename = post.filename(site.posts_path)
+      print "Exporting #{filename}..."
+      
+      filename = File.join("export", filename)
+      FileUtils.mkdir_p File.dirname(filename)
+      open(filename, 'w:UTF-8') do |f|
+        f.puts post.to_file
+      end
+      
+      print "complete.\n"
+    end
+  end
+end
+
+def export_uploads(site)
+  FileUtils::mkdir_p 'export/_uploads'
+
+  if assets = site.assets
+    assets.each do |asset|
+      filename = File.join("export", "_uploads", asset.filename)
+      arr_path = filename.split('/')
+
+      # Make subdirectories if needed
+      if arr_path.length > 3
+        subdir = arr_path[0..(arr_path.length - 2)].join('/')
+        FileUtils::mkdir_p subdir
+      end
+
+      if !File.exist?(filename) or (asset.checksum != Digest::MD5.hexdigest(IO.binread(filename)))
+        print "Exporting #{filename}..."
+        
+        file = open(asset.file['url'], 'r:UTF-8') { |f| f.read }
+        FileUtils.mkdir_p(File.dirname(filename))
+        File.open(filename, 'w:UTF-8') { |f| f.write(file) }
+
+        print "complete.\n"
+      end
+    end
   end
 end
 
@@ -235,6 +320,16 @@ when 'publish'
     quiet = %w[-q --quiet].include?(ARGV[1]) && ARGV[1]
     if site_id = get_site_id
       publish(site_id, quiet)
+    else
+      puts "Site not configured, run `siteleaf config yoursite.com`.\n"
+    end
+  end
+when 'export'
+  if auth != false
+    if site_id = get_site_id
+      print 'Enter your main posts path (default "posts"): '
+      posts_path = $stdin.gets.chomp
+      export(site_id, posts_path)
     else
       puts "Site not configured, run `siteleaf config yoursite.com`.\n"
     end
