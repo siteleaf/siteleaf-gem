@@ -82,7 +82,7 @@ def pull(site_id)
   collections = site.collections
   documents = collections.map{ |collection| collection.documents }.flatten
   
-  assets = [site] + files + uploads + pages + posts + documents
+  assets = [site, files, uploads, pages, posts, documents].flatten
   
   updated_count = 0
   
@@ -119,7 +119,7 @@ def push(site_id)
     documents += collection.documents
   end
   
-  assets = files + uploads + pages + posts + documents
+  assets = [files, uploads, pages, posts, documents].flatten
   
   updated_count = 0
   ignore_paths = ['_config.yml', 'config.ru', '.*', '_site/*', 'Gemfile', 'Gemfile.lock']
