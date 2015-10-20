@@ -106,6 +106,10 @@ end
 
 def put_theme_assets(site_id)
   theme = Siteleaf::Theme.find_by_site_id(site_id)
+  unless theme.id
+    puts "Could not retrieve theme, check your site configuration and try again.\n"
+    return false
+  end
   assets = theme.assets
   updated_count = 0
   ignore_paths = ['config.ru', '.*']
