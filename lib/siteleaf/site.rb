@@ -54,11 +54,21 @@ module Siteleaf
     end
     
     def sha
-      Digest::SHA1.hexdigest(to_file)
+      Siteleaf::GitHash.string(to_file)
+    end
+    
+    def config
+      attrs = {}
+      attrs['title'] = title
+      attrs['url'] = full_url
+      attrs['timezone'] = timezone
+      attrs['collections'] = collections_config
+      attrs['defaults'] = defaults_config unless defaults.empty?
+      attrs.merge(metadata.to_hash)
     end
     
     def to_file
-      config
+      config.to_yaml
     end
   
     protected
@@ -83,16 +93,6 @@ module Siteleaf
         hash[collection.path]['output'] = collection.output
         hash[collection.path]['permalink'] = collection.permalink unless collection.permalink.nil?
       end
-    end
-  
-    def config
-      attrs = metadata || {}
-      attrs['title'] = title
-      attrs['url'] = full_url
-      attrs['timezone'] = timezone
-      attrs['collections'] = collections_config
-      attrs['defaults'] = defaults_config unless defaults.empty?
-      attrs.to_yaml
     end
     
   end

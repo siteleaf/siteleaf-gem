@@ -36,10 +36,12 @@ module Siteleaf
       begin
         if (method == :post || method == :put) && !params.has_key?('file') && !params.has_key?(:file)
           request = HTTParty.send(method, Siteleaf.api_url(path), {
-            :headers => { 'Content-Type' => 'application/json' },
             :body => params.to_json,
             :basic_auth => {:username => Siteleaf.api_key, :password => Siteleaf.api_secret},
-            :headers => {"User-Agent" => "Siteleaf Gem/#{Siteleaf::VERSION}"},
+            :headers => {
+              "Content-Type" => "application/json",
+              "User-Agent" => "Siteleaf Gem/#{Siteleaf::VERSION}"
+            },
             :timeout => 300
           })
         else

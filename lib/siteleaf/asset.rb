@@ -9,26 +9,23 @@ module Siteleaf
     end
     
     def filename
-      # todo: temporary fix
       (directory == '.') ? basename : ::File.join(directory, basename)
+    end
+    
+    def frontmatter
+      attrs = {}
+      attrs['permalink'] = permalink unless permalink.nil?
+      attrs.merge(metadata.to_hash)
     end
     
     def to_file
       if static?
         body
       else
-        [frontmatter, "---\n\n".freeze, body].join('')
+        attrs = frontmatter
+        attrs_yaml = attrs.empty? ? "---\n".freeze : attrs.to_yaml
+        attrs_yaml + "---\n\n".freeze + body
       end
-    end
-  
-    protected
-  
-    def frontmatter
-      attrs = metadata || {}
-      attrs.delete('name') # todo: temporary fix
-      attrs['permalink'] = permalink unless permalink.nil?
-  
-      attrs.empty? ? "---\n".freeze : attrs.to_yaml
     end
     
     def body

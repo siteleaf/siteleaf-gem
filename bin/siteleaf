@@ -87,7 +87,7 @@ def pull(site_id)
   updated_count = 0
   
   assets.each do |asset|
-    sha = ::File.exist?(asset.filename) && Digest::SHA1.hexdigest(::File.read(asset.filename))
+    sha = ::File.exist?(asset.filename) && Siteleaf::GitHash.file(asset.filename)
     if asset.sha == sha
       # file is up to date
     else
@@ -105,7 +105,7 @@ end
 def push(site_id)
   # check config
   config = ::File.exist?('_config.yml') ? YAML::load(::File.read('_config.yml')) : {}
-  markdown_ext = (config['markdown_ext'] || 'markdown,mdw,mdwn,md,text').split(',')
+  markdown_ext = (config['markdown_ext'] || 'markdown,mkdown,mkdn,mkd,md').split(',')
   
   # get all the things
   site = Siteleaf::Site.find(site_id)
@@ -128,7 +128,7 @@ def push(site_id)
   
   # push site config
   path = '_config.yml'
-  if site.sha != Digest::SHA1.hexdigest(::File.read(path))
+  if site.sha != Siteleaf::GitHash.file(path)
     print "Uploading #{path}..."
     
     metadata = config.dup
@@ -188,7 +188,7 @@ def push(site_id)
       basedir = ::File.dirname(path).split('/').first
       basename = ::File.basename(path)
       ext = ::File.extname(path).sub('.', '')
-      sha = Digest::SHA1.hexdigest(::File.read(path))
+      sha = Siteleaf::GitHash.file(path)
       static = !has_yaml_header?(path)
       collection_id = nil
       
@@ -382,8 +382,7 @@ when 'n', 'new'
     end
   end
 when 'pull'
-  #case ARGV[1]
-  #when 'theme'
+  if ARGV.size == 1
     site_id = get_site_id
     if auth != false
       if site_id
@@ -392,12 +391,11 @@ when 'pull'
         puts "Site not configured, run `siteleaf config yoursite.com`.\n"
       end
     end
-  #else
-  #  puts "`#{ARGV[0]}` command not found.\n"
-  #end
+  else
+   puts "`#{ARGV.join(' ')}` command not found.\n"
+  end
 when 'push'
-  #case ARGV[1]
-  #when 'theme'
+  if ARGV.size == 1
     site_id = get_site_id
     if auth != false
       if site_id
@@ -406,9 +404,9 @@ when 'push'
         puts "Site not configured, run `siteleaf config yoursite.com`.\n"
       end
     end
-  #else
-  #  puts "`#{ARGV[0]}` command not found.\n"
-  #end
+  else
+    puts "`#{ARGV.join(' ')}` command not found.\n"
+  end
 when 'publish'
   site_id = get_site_id
   if auth != false

@@ -20,21 +20,20 @@ module Siteleaf
       visibility == 'visible'
     end
     alias_method :published?, :visible?
-
-    def to_file
-      frontmatter + "---\n\n".freeze + body.to_s
-    end
-  
-    protected
-  
+    
     def frontmatter
-      attrs = metadata || {}
+      attrs = {}
       attrs['title'] = title
       attrs['date'] = Time.parse(published_at).utc unless published_at.nil?
-      attrs['published'] = false if hidden?
       attrs['permalink'] = permalink unless permalink.nil?
-  
-      attrs.empty? ? "---\n".freeze : attrs.to_yaml
+      attrs['published'] = false if hidden?
+      attrs.merge(metadata.to_hash)
+    end
+
+    def to_file
+      attrs = frontmatter
+      attrs_yaml = attrs.empty? ? "---\n".freeze : attrs.to_yaml
+      attrs_yaml + "---\n\n".freeze + body.to_s
     end
     
   end

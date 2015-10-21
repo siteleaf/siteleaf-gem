@@ -2,6 +2,7 @@ libdir = ::File.dirname(__FILE__)
 $LOAD_PATH.unshift(libdir) unless $LOAD_PATH.include?(libdir)
 
 require 'siteleaf/version'
+require 'siteleaf/git_hash'
 require 'siteleaf/client'
 require 'siteleaf/entity'
 require 'siteleaf/asset'
