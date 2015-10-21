@@ -5,7 +5,8 @@ module Siteleaf
     def self.auth(email, password)
       begin
         request = HTTParty.post(Siteleaf.api_url('auth'), {
-          :basic_auth => {:username => email, :password => password}
+          :basic_auth => {:username => email, :password => password},
+          :headers => {"User-Agent" => "Siteleaf Gem/#{Siteleaf::VERSION}"}
         })
         return request.parsed_response # parse JSON
       rescue => e
@@ -35,6 +36,7 @@ module Siteleaf
         request = HTTMultiParty.send(method, Siteleaf.api_url(path), {
           :query => params,
           :basic_auth => {:username => Siteleaf.api_key, :password => Siteleaf.api_secret},
+          :headers => {"User-Agent" => "Siteleaf Gem/#{Siteleaf::VERSION}"},
           :timeout => 300
         })
         if request.respond_to?('parsed_response')
