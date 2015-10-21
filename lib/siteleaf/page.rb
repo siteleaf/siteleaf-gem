@@ -43,8 +43,11 @@ module Siteleaf
       "#{url.sub('/','')}.markdown"
     end
     
-    def to_file
-      assets = Dir.glob("export/_uploads/**/*").each_with_object({}) { |var, hash| hash[var.sub('export/_uploads','/assets')] = var.sub('export/_uploads','/uploads') }
+    def to_file(dir = 'export')
+      assets = Dir.glob("#{dir}/_uploads/**/*").each_with_object({}) do |var, hash| 
+        # remap assets to _uploads
+        hash[var.sub("#{dir}/_uploads",'/assets')] = var.sub("#{dir}/_uploads",'/uploads')
+      end
       (frontmatter + "---\n\n".freeze + body.to_s).gsub(Regexp.union(assets.keys), assets)
     end
   

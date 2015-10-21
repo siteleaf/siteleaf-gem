@@ -1,7 +1,7 @@
 module Siteleaf
   class Site < Entity
 
-    attr_accessor :title, :domain, :timezone, :meta, :posts_path
+    attr_accessor :title, :domain, :timezone, :meta, :posts_path, :version
     attr_reader :id, :user_id, :created_at, :updated_at
     
     def self.find_by_domain(domain)
@@ -53,8 +53,11 @@ module Siteleaf
       "_config.yml"
     end
     
-    def to_file
-      assets = Dir.glob("export/_uploads/**/*").each_with_object({}) { |var, hash| hash[var.sub('export/_uploads','/assets')] = var.sub('export/_uploads','/uploads') }
+    def to_file(dir = 'export')
+      assets = Dir.glob("#{dir}/_uploads/**/*").each_with_object({}) do |var, hash| 
+        # remap assets to _uploads
+        hash[var.sub("#{dir}/_uploads",'/assets')] = var.sub("#{dir}/_uploads",'/uploads')
+      end
       config.gsub(Regexp.union(assets.keys), assets)
     end
   
@@ -64,11 +67,10 @@ module Siteleaf
       attrs = {}
       attrs['title'] = title
       attrs['url'] = "http://#{domain}"
-      
-      meta.each{|m| attrs[m['key']] = m['value'].to_s.gsub("\r\n","\n")} unless meta.nil?
-      
       attrs['timezone'] = timezone
       attrs['permalink'] = 'pretty'
+      
+      meta.each{|m| attrs[m['key']] = m['value'].to_s.gsub("\r\n","\n")} unless meta.nil?
       
       # output uploads using v1 /assets path
       attrs['collections'] = {

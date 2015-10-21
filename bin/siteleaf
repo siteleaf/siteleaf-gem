@@ -4,6 +4,7 @@ require 'siteleaf'
 require 'fileutils'
 require 'open-uri'
 require 'digest/md5'
+require 'yaml'
 
 def help
   %Q(
@@ -46,9 +47,7 @@ def auth(re_auth = false)
     puts "\nAuthorizing..."
 
     if (auth = Siteleaf::Client.auth(email, password)) && (auth.is_a?(Hash)) && (auth.has_key?('api_key'))
-      File.open(Siteleaf.settings_file,'w') do|file|
-        Marshal.dump({:api_key => auth['api_key'], :api_secret => auth['api_secret']}, file)
-      end
+      Siteleaf.save_settings({api_key: auth['api_key'], api_secret: auth['api_secret']})
       puts "=> Gem authorized." if re_auth
       return true
     else
@@ -176,31 +175,30 @@ def publish(site_id, quiet = true)
   end
 end
 
-def export(site_id, posts_path = "posts")
-  FileUtils.mkdir_p 'export'
+def export(site_id, posts_path = "posts", dir = 'export')
   posts_path = "posts" if posts_path == ""
   
   site = Siteleaf::Site.find(site_id)
   site.posts_path = posts_path
   
-  export_uploads(site)
-  export_content(site)
-  export_config(site)
+  export_uploads(site, dir)
+  export_content(site, dir)
+  export_config(site, dir)
 end
 
-def export_config(site)
+def export_config(site, dir = 'export')
   filename = site.filename
   print "Exporting #{filename}..."
   
-  filename = File.join("export", filename)
+  filename = File.join(dir, filename)
   open(filename, 'w:UTF-8') do |f|
-    f.puts site.to_file
+    f.puts site.to_file(dir)
   end
   
   print "complete.\n"
 end
 
-def export_content(site)
+def export_content(site, dir = 'export')
   pages = site.pages
 
   pages.each do |page|
@@ -209,10 +207,10 @@ def export_content(site)
       filename = page.filename
       print "Exporting #{filename}..."
       
-      filename = File.join("export", filename)
+      filename = File.join(dir, filename)
       FileUtils.mkdir_p File.dirname(filename)
       open(filename, 'w:UTF-8') do |f|
-        f.puts page.to_file
+        f.puts page.to_file(dir)
       end
       
       print "complete.\n"
@@ -222,10 +220,10 @@ def export_content(site)
       filename = post.filename(site.posts_path)
       print "Exporting #{filename}..."
       
-      filename = File.join("export", filename)
+      filename = File.join(dir, filename)
       FileUtils.mkdir_p File.dirname(filename)
       open(filename, 'w:UTF-8') do |f|
-        f.puts post.to_file
+        f.puts post.to_file(dir)
       end
       
       print "complete.\n"
@@ -233,20 +231,10 @@ def export_content(site)
   end
 end
 
-def export_uploads(site)
-  FileUtils::mkdir_p 'export/_uploads'
-
+def export_uploads(site, dir = 'export')
   if assets = site.assets
     assets.each do |asset|
-      filename = File.join("export", "_uploads", asset.filename)
-      arr_path = filename.split('/')
-
-      # Make subdirectories if needed
-      if arr_path.length > 3
-        subdir = arr_path[0..(arr_path.length - 2)].join('/')
-        FileUtils::mkdir_p subdir
-      end
-
+      filename = File.join(dir, "_uploads", asset.filename)
       if !File.exist?(filename) or (asset.checksum != Digest::MD5.hexdigest(IO.binread(filename)))
         print "Exporting #{filename}..."
         
@@ -286,8 +274,8 @@ when 'n', 'new'
   if auth != false
     if (site = Siteleaf::Site.create(:title => ARGV[1], :domain => ARGV[1])) && (!site.error)
       dir = ARGV.size >= 3 ? ARGV[2] : ARGV[1]
-      Dir.mkdir(dir) unless File.directory?(dir)
-      Dir.chdir(dir)
+      FileUtils.mkdir_p dir
+      Dir.chdir dir
       config site
     else
       puts "Could not create site `#{ARGV[1]}`.\n"
@@ -333,7 +321,9 @@ when 'export'
     if site_id = get_site_id
       print 'Enter your main posts path (default "posts"): '
       posts_path = $stdin.gets.chomp
-      export(site_id, posts_path)
+      dir = ARGV.size >= 2 ? ARGV[1] : 'export'
+      FileUtils.mkdir_p dir
+      export(site_id, posts_path, dir)
     else
       puts "Site not configured, run `siteleaf config yoursite.com`.\n"
     end
