@@ -91,7 +91,7 @@ module Siteleaf
       end
       
       # set permalink style for posts
-      attrs['defaults'] = {
+      attrs['defaults'] = [{
         'scope' => {
           'path' => '', 
           'type' => 'posts'
@@ -99,7 +99,7 @@ module Siteleaf
         'values' => {
           'permalink' => "/#{posts_path}/:title/" 
         }
-      }
+      }]
       
       # markdown defaults to match v1 rendering
       attrs['markdown'] = 'redcarpet'
