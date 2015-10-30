@@ -53,16 +53,6 @@ module Siteleaf
       "_config.yml"
     end
     
-    def to_file(dir = 'export')
-      assets = Dir.glob("#{dir}/_uploads/**/*").each_with_object({}) do |var, hash| 
-        # remap assets to _uploads
-        hash[var.sub("#{dir}/_uploads",'/assets')] = var.sub("#{dir}/_uploads",'/uploads')
-      end
-      config.gsub(Regexp.union(assets.keys), assets)
-    end
-  
-    protected
-  
     def config
       attrs = {}
       attrs['title'] = title
@@ -70,7 +60,7 @@ module Siteleaf
       attrs['timezone'] = timezone
       attrs['permalink'] = 'pretty'
       
-      meta.each{|m| attrs[m['key']] = m['value'].to_s.gsub("\r\n","\n")} unless meta.nil?
+      meta.each{|m| attrs[m['key']] = m['value'] == '' ? nil : m['value'].to_s.gsub("\r\n","\n")} unless meta.nil?
       
       # output uploads using v1 /assets path
       attrs['collections'] = {
@@ -107,7 +97,16 @@ module Siteleaf
         'extensions' => ['autolink', 'fenced_code_blocks', 'lax_spacing', 'strikethrough', 'superscript', 'tables', 'footnotes', 'highlight']
       }
    
-      attrs.empty? ? "---\n".freeze : attrs.to_yaml
+      attrs
+    end
+    
+    def to_file(dir = 'export')
+      assets = Dir.glob("#{dir}/_uploads/**/*").each_with_object({}) do |var, hash| 
+        # remap assets to _uploads
+        hash[var.sub("#{dir}/_uploads",'/assets')] = var.sub("#{dir}/_uploads",'/uploads')
+      end
+      
+      config.to_yaml.gsub(Regexp.union(assets.keys), assets)
     end
     
   end

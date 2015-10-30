@@ -43,31 +43,33 @@ module Siteleaf
       "#{url.sub('/','')}.markdown"
     end
     
-    def to_file(dir = 'export')
-      assets = Dir.glob("#{dir}/_uploads/**/*").each_with_object({}) do |var, hash| 
-        # remap assets to _uploads
-        hash[var.sub("#{dir}/_uploads",'/assets')] = var.sub("#{dir}/_uploads",'/uploads')
-      end
-      (frontmatter + "---\n\n".freeze + body.to_s).gsub(Regexp.union(assets.keys), assets)
-    end
-  
-    protected
-  
     def frontmatter
       attrs = {}
       attrs['title'] = title
       attrs['date'] = Time.parse(published_at).utc
       attrs['published'] = false if !published?
       
-      meta.each{|m| attrs[m['key']] = m['value'].to_s.gsub("\r\n","\n")} unless meta.nil?
+      meta.each{|m| attrs[m['key']] = m['value'] == '' ? nil : m['value'].to_s.gsub("\r\n","\n")} unless meta.nil?
       
       if defined?(taxonomy) && !taxonomy.nil?
         taxonomy.each do |t| 
-          attrs[t['key']] = t['values'].map{|v| v['value']} unless t['values'].empty?
+          attrs[t['key']] = t['values'].map{|v| v['value'] } unless t['values'].empty?
         end 
       end
   
-      attrs.empty? ? "---\n".freeze : attrs.to_yaml
+      attrs
+    end
+    
+    def to_file(dir = 'export')
+      assets = Dir.glob("#{dir}/_uploads/**/*").each_with_object({}) do |var, hash| 
+        # remap assets to _uploads
+        hash[var.sub("#{dir}/_uploads",'/assets')] = var.sub("#{dir}/_uploads",'/uploads')
+      end
+
+      attrs = frontmatter
+      attrs_yaml = attrs.empty? ? "---\n".freeze : attrs.to_yaml
+
+      (attrs_yaml + "---\n\n".freeze + body.to_s).gsub(Regexp.union(assets.keys), assets)
     end
     
   end
