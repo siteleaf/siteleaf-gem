@@ -60,7 +60,7 @@ module Siteleaf
       attrs['timezone'] = timezone
       attrs['permalink'] = 'pretty'
       
-      meta.each{|m| attrs[m['key']] = m['value'].to_s == '' ? nil : m['value'].to_s.gsub("\r\n","\n")} unless meta.nil?
+      meta.each{|m| attrs[m['key'].to_s.downcase] = m['value'].to_s == '' ? nil : m['value'].to_s.gsub("\r\n","\n")} unless meta.nil?
       
       # output uploads using v1 /assets path
       attrs['collections'] = {

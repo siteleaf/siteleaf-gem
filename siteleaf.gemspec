@@ -17,6 +17,7 @@ Gem::Specification.new do |gem|
   
   gem.add_dependency 'httparty', '>= 0.13.3'
   gem.add_dependency 'httmultiparty', '>= 0.3.13'
+  gem.add_dependency 'psych', '2.0.8'
   gem.add_dependency 'rack'
 
   gem.files         = `git ls-files`.split($/)
