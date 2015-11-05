@@ -49,7 +49,7 @@ module Siteleaf
       attrs['date'] = Time.parse(published_at).utc
       attrs['published'] = false if !published?
       
-      meta.each{|m| attrs[m['key']] = m['value'] == '' ? nil : m['value'].to_s.gsub("\r\n","\n")} unless meta.nil?
+      meta.each{|m| attrs[m['key']] = m['value'].to_s == '' ? nil : m['value'].to_s.gsub("\r\n","\n")} unless meta.nil?
       
       if defined?(taxonomy) && !taxonomy.nil?
         taxonomy.each do |t| 
@@ -69,7 +69,7 @@ module Siteleaf
       attrs = frontmatter
       attrs_yaml = attrs.empty? ? "---\n".freeze : attrs.to_yaml
 
-      (attrs_yaml + "---\n\n".freeze + body.to_s).gsub(Regexp.union(assets.keys), assets)
+      (attrs_yaml + "---\n\n".freeze + body.to_s.gsub("\r\n","\n")).gsub(Regexp.union(assets.keys), assets)
     end
     
   end
