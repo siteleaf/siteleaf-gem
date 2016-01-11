@@ -2,7 +2,7 @@ module Siteleaf
   class Asset < Entity
 
     attr_accessor :file, :filename, :path, :basename, :directory, :permalink, :replace, :site_id, :metadata
-    attr_reader :id, :basename, :directory, :url, :content_type, :filesize, :sha, :static, :created_at, :updated_at
+    attr_reader :id, :name, :basename, :directory, :url, :download_url, :content_type, :filesize, :sha, :type, :created_at, :updated_at
     
     def site
       Site.find(self.site_id) if self.site_id

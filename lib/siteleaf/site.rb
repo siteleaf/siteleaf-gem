@@ -15,33 +15,31 @@ module Siteleaf
       Job.new(id: result["job_id"]) if result
     end
     
-    def files
-      result = Client.get "sites/#{self.id}/files"
+    def files(dir = '.')
+      result = Client.get File.join("sites", identifier, "files", dir)
       result.map { |r| File.new(r) } if result.is_a? Array
     end
     
-    def uploads
-      result = Client.get "sites/#{self.id}/uploads"
-      result.map { |r| Upload.new(r) } if result.is_a? Array
-    end
-    
     def pages
-      result = Client.get "sites/#{self.id}/pages"
+      result = Client.get "sites/#{identifier}/pages"
       result.map { |r| Page.new(r) } if result.is_a? Array
-    end
-    
-    def posts
-      result = Client.get "sites/#{self.id}/posts"
-      result.map { |r| Post.new(r) } if result.is_a? Array
-    end
+    end    
     
     def collections
-      result = Client.get "sites/#{self.id}/collections"
+      result = Client.get "sites/#{identifier}/collections"
       result.map { |r| Collection.new(r) } if result.is_a? Array
     end
     
+    def posts
+      Collection.new(path: 'posts', site_id: id).documents
+    end
+    
+    def uploads
+      Collection.new(path: 'uploads', site_id: id).files
+    end
+    
     def publish
-      result = Client.post "sites/#{self.id}/publish", {}
+      result = Client.post "sites/#{identifier}/publish", {}
       Job.new(id: result["job_id"]) if result
     end
     

@@ -8,24 +8,28 @@ module Siteleaf
     end
 
     def self.all
-      result = Client.get "#{self.endpoint}"
-      result.map { |r| self.new(r) } if result.is_a? Array
+      result = Client.get endpoint
+      result.map { |r| new(r) } if result.is_a? Array
     end
 
-    def self.find(id)
-      result = Client.get "#{self.endpoint}/#{id}"
-      self.new(result) if result
+    def self.find(identifier)
+      result = Client.get "#{endpoint}/#{identifier}"
+      new(result) if result
     end
 
     def self.create(attributes = {})
-      self.new(attributes).save
+      new(attributes).save
+    end
+    
+    def self.delete(identifier)
+      Client.delete "#{endpoint}/#{identifier}"
     end
 
     def save
-      if self.id
-        result = Client.put "#{self.class.endpoint}/#{self.id}", self.attributes
+      if identifier
+        result = Client.put update_endpoint, attributes
       else
-        result = Client.post "#{self.create_endpoint}", self.attributes
+        result = Client.post create_endpoint, attributes
       end
       if result
         self.attributes = result
@@ -33,12 +37,8 @@ module Siteleaf
       end
     end
 
-    def self.delete(id)
-      Client.delete "#{self.endpoint}/#{id}"
-    end
-
     def delete
-      Client.delete "#{self.class.endpoint}/#{self.id}"
+      Client.delete update_endpoint
     end
 
     def attributes
@@ -59,6 +59,14 @@ module Siteleaf
 
     def create_endpoint
       self.class.endpoint
+    end
+    
+    def update_endpoint
+      "#{self.class.endpoint}/#{identifier}"
+    end
+    
+    def identifier
+      id
     end
 
   end
