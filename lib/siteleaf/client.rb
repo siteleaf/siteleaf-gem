@@ -15,7 +15,7 @@ module Siteleaf
     end
 
     def self.get(path, params = {})
-      params['limit'] = 9999
+      params['per_page'] = 9999 # todo: paginate
       self.execute(:get, path, params)
     end
 

@@ -16,8 +16,8 @@ module Siteleaf
     end
     
     def files(dir = '.')
-      result = Client.get File.join("sites", identifier, "files", dir)
-      result.map { |r| File.new(r) } if result.is_a? Array
+      result = Client.get ::File.join("sites", identifier, "files", dir)
+      result.map { |r| File.new(r.merge('site_id' => id)) } if result.is_a? Array
     end
     
     def pages
@@ -68,8 +68,28 @@ module Siteleaf
     def to_file
       config.to_yaml
     end
+    
+    def tree
+      @tree_files = []
+      @tree_dirs = []
+      recursive_files
+      @tree_files
+    end
   
     protected
+    
+    def recursive_files(dir = '.')
+      files(dir).each do |file|
+        if file.type == 'directory'
+          unless @tree_dirs.include?(file.filename)
+            @tree_dirs << file.filename
+            recursive_files(file.filename) 
+          end
+        else
+          @tree_files << file
+        end
+      end
+    end
     
     def uploads_collection
       Collection.new('title' => 'Uploads', 'path' => 'uploads', 'output' => true)

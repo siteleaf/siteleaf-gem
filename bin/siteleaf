@@ -52,6 +52,149 @@ def auth(re_auth = false)
       return false
     end
   end
+rescue Exception => e
+  print "Error: #{e.message}\n"
+end
+
+def pull(site_id)
+  print "Reading site...\n"
+  
+  # get all the things
+  site = Siteleaf::Site.find(site_id)
+  site_files = site.tree
+  updated_count = 0
+  
+  # download unmatched files
+  site_files.each do |file|
+    sha = ::File.exist?(file.filename) && Siteleaf::GitHash.file(file.filename)
+    if file.sha != sha
+      print "Downloading #{file.filename}..."
+      FileUtils.mkdir_p(::File.dirname(file.filename))
+      ::File.open(file.filename, 'w') { |f| f.write(file.to_file) }
+      updated_count += 1
+      print "complete.\n"
+    end
+  end
+  
+  # check for old files
+  local_files = read_dir
+  missing_files = []
+  local_files.each do |path| 
+    missing_files << path if !site_files.find{|a| a.filename.casecmp(path) == 0 }
+  end
+  if missing_files.empty?
+    puts "=> #{updated_count} file(s) downloaded.\n"
+  else
+    print "=> #{updated_count} file(s) downloaded. Delete the following #{missing_files.size} unmatched local file(s)?\n"
+    missing_files.each do |path|
+      puts path
+    end
+    print '(y/n)? '
+    if $stdin.gets.chomp == 'y'
+      missing_files.each do |path|
+        print "Deleting #{path}..."
+        ::File.delete(path)
+        print "complete.\n"
+      end
+      puts "=> #{missing_files.size} file(s) deleted.\n"
+    end
+  end
+rescue Exception => e
+  print "Error: #{e.message}\n"
+end
+
+def push(site_id)
+  print "Reading site...\n"
+  
+  # get all the things
+  site = Siteleaf::Site.find(site_id)
+  site_files = site.tree
+  local_files = read_dir
+  updated_count = 0
+  
+  # find changed files
+  changed_files = local_files.reject do |path|
+    file = site_files.find{|a| a.filename.casecmp(path) == 0 }
+    file && Siteleaf::GitHash.file(path) == file.sha
+  end
+  changed_files.unshift('_config.yml') if changed_files.delete('_config.yml') 
+  
+  # upload changed files
+  changed_files.each do |path|  
+    print "Uploading #{path}..."   
+    response = Siteleaf::File.create(site_id: site_id, filename: path, file: ::File.new(path))
+    if error = !response || response.error || response.message
+      print (error) ? "error: #{error}\n" : "error.\n"
+      return
+    else
+      updated_count += 1
+      print "complete.\n"
+    end
+  end
+  
+  # check for old files
+  missing_assets = []
+  site_files.each do |asset| 
+    missing_assets << asset if !local_files.find{|p| p.casecmp(asset.filename) == 0 }
+  end
+  if missing_assets.empty?
+    puts "=> #{updated_count} file(s) uploaded.\n"
+  else
+    print "=> #{updated_count} file(s) uploaded. Delete the following #{missing_assets.size} unmatched remote file(s)?\n"
+    missing_assets.each do |asset|
+      puts asset.filename
+    end
+    print '(y/n)? '
+    if $stdin.gets.chomp == 'y'
+      missing_assets.each do |asset|
+        print "Deleting #{asset.filename}..."
+        asset.delete
+        print "complete.\n"
+      end
+      puts "=> #{missing_assets.size} file(s) deleted.\n"
+    end
+  end
+#rescue Exception => e
+#  print "Error: #{e.message}\n"
+end
+
+def import(file, quiet = true)
+  job = Siteleaf::Site.import(file: ::File.new(file))
+  
+  if quiet
+    puts "=> Import queued.\n"
+  else
+    last_msg = nil
+    job.stream do |s|
+      if (msg = s["message"]) && (msg != last_msg)
+        puts msg
+        last_msg = msg
+      end
+    end
+    puts "=> Import completed.\n"
+  end
+rescue Exception => e
+  print "Error: #{e.message}\n"
+end
+
+def publish(site_id, quiet = true)
+  site = Siteleaf::Site.new(id: site_id)
+  job = site.publish
+  
+  if quiet
+    puts "=> Publish queued.\n"
+  else
+    last_msg = nil
+    job.stream do |s|
+      if (msg = s["message"]) && (msg != last_msg)
+        puts msg
+        last_msg = msg
+      end
+    end
+    puts "=> Publish completed.\n"
+  end
+rescue Exception => e
+  print "Error: #{e.message}\n"
 end
 
 def config(site)
@@ -72,287 +215,17 @@ def get_site_id
   end
 end
 
-def pull(site_id)
-  # get all the things
-  site = Siteleaf::Site.find(site_id)
-  files = site.files
-  uploads = site.uploads
-  pages = site.pages
-  posts = site.posts
-  collections = site.collections
-  documents = collections.map{ |collection| collection.documents }.flatten
+def read_dir
+  jekyll_config = ::File.exist?('_config.yml') ? YAML::load(::File.read('_config.yml')) : {}
   
-  assets = [site, files, uploads, pages, posts, documents].flatten
-  
-  updated_count = 0
-  
-  assets.each do |asset|
-    sha = ::File.exist?(asset.filename) && Siteleaf::GitHash.file(asset.filename)
-    if asset.sha == sha
-      # file is up to date
-    else
-      print "Downloading #{asset.filename}..."
-      FileUtils.mkdir_p(::File.dirname(asset.filename))
-      ::File.open(asset.filename, 'w:UTF-8') { |f| f.write(asset.to_file) }
-      updated_count += 1
-      print "complete.\n"
-    end
-  end
-  
-  puts "=> #{updated_count} file(s) downloaded.\n"
-end
-
-def push(site_id)
-  # check config
-  config = ::File.exist?('_config.yml') ? YAML::load(::File.read('_config.yml')) : {}
-  markdown_ext = (config['markdown_ext'] || 'markdown,mkdown,mkdn,mkd,md').split(',')
-  
-  # get all the things
-  site = Siteleaf::Site.find(site_id)
-  files = site.files
-  uploads = site.uploads
-  pages = site.pages
-  posts = site.posts
-  collections = site.collections
-  documents = []
-  collections.each do |collection|
-    documents += collection.documents
-  end
-  
-  assets = [files, uploads, pages, posts, documents].flatten
-  
-  updated_count = 0
-  ignore_paths = ['_config.yml', 'config.ru', '.*', '_site/*', 'Gemfile', 'Gemfile.lock']
+  ignore_paths = ['config.ru', '.*', '_site/*', 'Gemfile', 'Gemfile.lock']
   ignore_paths += ::File.read('.siteleafignore').split(/\r?\n/) if ::File.exists?('.siteleafignore')
-  ignore_paths += config['exclude'] if config['exclude'].is_a? Array
+  ignore_paths += jekyll_config['exclude'] if jekyll_config['exclude'].is_a? Array
   
-  # push site config
-  path = '_config.yml'
-  if site.sha != Siteleaf::GitHash.file(path)
-    print "Uploading #{path}..."
-    
-    metadata = config.dup
-    metadata.delete('collections')
-    attrs = { 'id' => site_id }
-    attrs['title'] = metadata.delete('title') if metadata['title']
-    attrs['domain'] = metadata.delete('url') if metadata['url']
-    attrs['timezone'] = metadata.delete('timezone') if metadata['timezone']
-    attrs['defaults'] = metadata.delete('defaults').map{|default|
-      {
-        'path' => default['scope']['path'],
-        'type' => default['scope']['type'],
-        'values' => default['values']
-      }
-    } if metadata['defaults']
-    attrs['metadata'] = metadata
-    
-    response = Siteleaf::Site.new(attrs).save
-    
-    if error = !response || response.error || response.message
-      print (error) ? "error: #{error}\n" : "error.\n"
-      return
-    else
-      updated_count += 1
-      print "complete.\n"
-    end
+  Dir.glob("**/*").reject do |path|
+    ::File.directory?(path) || 
+    ignore_paths.any? {|i| ::File.fnmatch?(i, path, File::FNM_CASEFOLD) || ::File.fnmatch?(i, ::File.basename(path), File::FNM_CASEFOLD) }
   end
-  
-  # create collections
-  collection_paths = []
-  collections_config = config['collections'] || {} 
-  collections_config.each do |path, metadata|
-    path = path.gsub(/[^a-z0-9_\-\.]/i, '')
-    collection_paths << "_#{path}"
-    collection = collections.find{|c| c.path.casecmp(path) == 0 }
-    title = metadata.delete('title') || path
-    output = metadata.delete('output')
-    permalink = metadata.delete('permalink')
-
-    if !collection
-      # create any new collections
-      collections << Siteleaf::Collection.create(site_id: site.id, title: title, path: path, output: output, permalink: permalink, metadata: metadata)
-    elsif collection.title != title || collection.output != output || collection.permalink != permalink || collection.metadata != metadata
-      # update any changed collections
-      collections.delete(collection)
-      colllection = Siteleaf::Collection.new(id: collection.id, title: title, path: path, output: output, permalink: permalink, metadata: metadata).save
-      collections << colllection
-    end
-  end
-  
-  # upload files
-  paths = Dir.glob("**/*")
-  paths.each do |path|
-    if !::File.directory?(path) && !ignore_paths.any?{|i| ::File.fnmatch?(i, path, File::FNM_CASEFOLD) || ::File.fnmatch?(i, ::File.basename(path), File::FNM_CASEFOLD) }
-    
-      asset = assets.find{|a| a.filename.casecmp(path) == 0 }
-      basedir = ::File.dirname(path).split('/').first
-      basename = ::File.basename(path)
-      ext = ::File.extname(path).sub('.', '')
-      sha = Siteleaf::GitHash.file(path)
-      static = !has_yaml_header?(path)
-      collection_id = nil
-      
-      model = if ['_drafts', '_posts'].include?(basedir)
-        Siteleaf::Post
-      elsif basedir == '_uploads'
-        Siteleaf::Upload
-      elsif collection_paths.include?(basedir) && (collection = collections.find {|c| basedir == "_#{c.path}" })
-        collection_id = collection.id
-        Siteleaf::Document
-      elsif !static && markdown_ext.include?(ext)
-        Siteleaf::Page
-      else
-        Siteleaf::File
-      end
-      
-      if asset.nil? || asset.sha != sha || !asset.is_a?(model) || asset.filename != path
-        
-        print "Uploading #{path}..."
-      
-        response = if [Siteleaf::Post, Siteleaf::Document, Siteleaf::Page].include?(model)
-          
-          # handle content
-          metadata = {}
-          unless static
-            body, metadata = read_frontmatter(path)
-          end
-        
-          clean_path = path.sub("#{basedir}/",'').sub(".#{ext}",'')
-          title = metadata.delete('title') || ::File.basename(clean_path)
-          
-          attrs = {site_id: site.id, title: title, path: clean_path, static: static}
-          attrs[:body] = body if body && body != ""
-          attrs[:metadata] = metadata if metadata && !metadata.empty? 
-          
-          if basedir == '_drafts'
-            attrs[:visibility] = 'draft'
-          elsif basedir == '_posts'
-            attrs[:visibility] = (metadata['published'].delete == false) ? 'hidden' : 'visible'
-          elsif model == Siteleaf::Document
-            attrs[:collection_id] = collection_id
-          else
-            attrs[:path] = path.sub(".#{ext}",'')
-          end
-          
-          if asset && asset.is_a?(model)
-            attrs[:id] = asset.id
-            asset = model.new(attrs).save
-          else
-            asset.delete if asset
-            asset = model.create(attrs)
-          end
-        
-        else
-        
-          # handle assets      
-          file = path
-          metadata = {}
-          unless static
-            body, metadata = read_frontmatter(path)
-            file = Tempfile.new(basename)
-            ::File.open(file, 'w:UTF-8') { |f| f.write(body) }
-          end
-          
-          attrs = {site_id: site.id, file: ::File.new(file), path: path, static: static}
-          if basedir == '_uploads'
-            attrs[:path] = path.sub("#{basedir}/",'')
-          end
-          
-          asset.delete if asset
-          asset = model.create(attrs)
-          if metadata && !metadata.empty? 
-            asset = model.new(id: asset.id, metadata: metadata).save
-          end
-          asset
-          
-        end
-
-        if error = !response || response.error || response.message
-          print (error) ? "error: #{error}\n" : "error.\n"
-          return
-        else
-          updated_count += 1
-          print "complete.\n"
-        end
-        
-      end
-    end
-  end
-  
-  # check for old files
-  missing_assets = []
-  collections.each do |collection| 
-    missing_assets << collection if !collection_paths.find{|p| p.casecmp("_#{collection.path}") == 0}
-  end
-  assets.each do |asset| 
-    missing_assets << asset if !paths.find{|p| p.casecmp(asset.filename) == 0 }
-  end
-  if missing_assets.empty?
-    puts "=> #{updated_count} file(s) uploaded.\n"
-  else
-    print "=> #{updated_count} file(s) uploaded. Delete the following #{missing_assets.size} unmatched file(s)?\n"
-    missing_assets.each do |asset|
-      puts asset.filename
-    end
-    print '(y/n)? '
-    if $stdin.gets.chomp == 'y'
-      missing_assets.each do |asset|
-        print "Deleting #{asset.filename}..."
-        asset.delete
-        print "complete.\n"
-      end
-      puts "=> #{missing_assets.size} file(s) deleted.\n"
-    end
-  end
-end
-
-def import(file, quiet = true)
-  job = Siteleaf::Site.import(file: ::File.new(file))
-  
-  if quiet
-    puts "=> Import queued.\n"
-  else
-    last_msg = nil
-    job.stream do |s|
-      if (msg = s["message"]) && (msg != last_msg)
-        puts msg
-        last_msg = msg
-      end
-    end
-    puts "=> Import completed.\n"
-  end
-end
-
-def publish(site_id, quiet = true)
-  site = Siteleaf::Site.new(id: site_id)
-  job = site.publish
-  
-  if quiet
-    puts "=> Publish queued.\n"
-  else
-    last_msg = nil
-    job.stream do |s|
-      if (msg = s["message"]) && (msg != last_msg)
-        puts msg
-        last_msg = msg
-      end
-    end
-    puts "=> Publish completed.\n"
-  end
-end
-
-def has_yaml_header?(file)
-  !!(File.open(file, 'rb') { |f| f.read(5) } =~ /\A---\r?\n/)
-end
-
-def read_frontmatter(file)  
-  content = ::File.read(file)
-  metadata = {}
-  if content =~ /\A(---\s*\n.*?\n?)^((---|\.\.\.)\s*$\n?)/m
-    content = $POSTMATCH
-    metadata = YAML.load($1)
-  end
-  return content, metadata
 end
 
 case ARGV[0]
