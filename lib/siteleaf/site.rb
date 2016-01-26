@@ -15,18 +15,18 @@ module Siteleaf
       Job.new(id: result["job_id"]) if result
     end
     
-    def files(dir = '.')
-      result = Client.get ::File.join("sites", identifier, "files", dir)
-      result.map { |r| File.new(r.merge('site_id' => id)) } if result.is_a? Array
+    def source_files(dir = '.')
+      result = Client.get ::File.join(entity_endpoint, "source", dir)
+      result.map { |r| SourceFile.new(r.merge('site_id' => id)) } if result.is_a? Array
     end
     
     def pages
-      result = Client.get "sites/#{identifier}/pages"
+      result = Client.get "#{entity_endpoint}/pages"
       result.map { |r| Page.new(r) } if result.is_a? Array
     end    
     
     def collections
-      result = Client.get "sites/#{identifier}/collections"
+      result = Client.get "#{entity_endpoint}/collections"
       result.map { |r| Collection.new(r) } if result.is_a? Array
     end
     
@@ -39,7 +39,7 @@ module Siteleaf
     end
     
     def publish
-      result = Client.post "sites/#{identifier}/publish", {}
+      result = Client.post "#{entity_endpoint}/publish", {}
       Job.new(id: result["job_id"]) if result
     end
     
@@ -55,61 +55,25 @@ module Siteleaf
       Siteleaf::GitHash.string(to_file)
     end
     
-    def config
-      attrs = {}
-      attrs['title'] = title
-      attrs['url'] = full_url
-      attrs['timezone'] = timezone
-      attrs['collections'] = collections_config
-      attrs['defaults'] = defaults_config unless defaults.empty?
-      attrs.merge(metadata.to_hash)
-    end
-    
-    def to_file
-      config.to_yaml
-    end
-    
-    def tree
+    def source_tree(dir = '.')
       @tree_files = []
       @tree_dirs = []
-      recursive_files
+      recursive_source_files(dir)
       @tree_files
     end
   
     protected
     
-    def recursive_files(dir = '.')
-      files(dir).each do |file|
+    def recursive_source_files(dir = '.')
+      source_files(dir).each do |file|
         if file.type == 'directory'
-          unless @tree_dirs.include?(file.filename)
-            @tree_dirs << file.filename
-            recursive_files(file.filename) 
+          unless @tree_dirs.include?(file.name)
+            @tree_dirs << file.name
+            recursive_source_files(file.name) 
           end
         else
           @tree_files << file
         end
-      end
-    end
-    
-    def uploads_collection
-      Collection.new('title' => 'Uploads', 'path' => 'uploads', 'output' => true)
-    end
-    
-    def defaults_config
-      defaults.map do |d|
-        { 'scope' => {}, 'values' => d['values'] }.tap do |default|
-          default['scope']['path'] = d['path'] if d['path']
-          default['scope']['type'] = d['type'] if d['type']
-        end
-      end
-    end
-    
-    def collections_config
-      collections.unshift(uploads_collection).each_with_object({}) do |collection, hash|
-        hash[collection.path] = collection.metadata || {}
-        hash[collection.path]['title'] = collection.title
-        hash[collection.path]['output'] = collection.output
-        hash[collection.path]['permalink'] = collection.permalink unless collection.permalink.nil?
       end
     end
     

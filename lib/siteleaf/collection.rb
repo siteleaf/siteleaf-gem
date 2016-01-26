@@ -5,11 +5,11 @@ module Siteleaf
     attr_reader :id, :directory, :created_at, :updated_at
     
     def create_endpoint
-      "sites/#{site_id}/collections"
+      ::File.join("sites", site_id, "collections")
     end
     
-    def update_endpoint
-      "sites/#{site_id}/collections/#{identifier}"
+    def entity_endpoint
+      ::File.join(create_endpoint, identifier)
     end
     
     def identifier
@@ -21,12 +21,12 @@ module Siteleaf
     end
     
     def documents
-      result = Client.get "sites/#{site_id}/collections/#{identifier}/documents"
+      result = Client.get "#{entity_endpoint}/documents"
       result.map { |r| Document.new(r) } if result.is_a? Array
     end
     
     def files
-      result = Client.get "sites/#{site_id}/collections/#{identifier}/files"
+      result = Client.get "#{entity_endpoint}/files"
       result.map { |r| File.new(r) } if result.is_a? Array
     end
     

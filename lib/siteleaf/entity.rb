@@ -27,7 +27,7 @@ module Siteleaf
 
     def save
       if identifier
-        result = Client.put update_endpoint, attributes
+        result = Client.put entity_endpoint, attributes
       else
         result = Client.post create_endpoint, attributes
       end
@@ -38,7 +38,7 @@ module Siteleaf
     end
 
     def delete
-      Client.delete update_endpoint
+      Client.delete entity_endpoint
     end
 
     def attributes
@@ -61,7 +61,7 @@ module Siteleaf
       self.class.endpoint
     end
     
-    def update_endpoint
+    def entity_endpoint
       "#{self.class.endpoint}/#{identifier}"
     end
     

@@ -4,7 +4,7 @@ module Siteleaf
     attr_accessor :collection_path
     
     def create_endpoint
-      "sites/#{site_id}/collections/#{collection_identifier}/documents"
+      ::File.join("sites", site_id, "collections", collection_identifier, "documents")
     end
     
     def collection

@@ -118,44 +118,68 @@ site.publish
 # delete site
 site.delete
 
-# delete site by id
-Siteleaf::Site.delete('5196f137cc8591956b000001')
-
 # get all pages in site
 pages = site.pages
 
 # create new page in site
 page = Siteleaf::Page.create({
-  :site_id  => site.id,
   :title    => 'My Page',
-  :body     => 'This is my first page.'
+  :body     => 'This is my first page.',
+  :site_id  => site.id
 })
 
 # get page by id
 page = Siteleaf::Page.find('519719ddcc85910626000001')
 
-# create new post in page
-post = Siteleaf::Post.create({
-  :title     => 'My Post',
-  :body      => 'This is my first post.'
+# delete page by id
+Siteleaf::Page.delete('519719ddcc85910626000001')
+
+# get posts
+posts = site.posts # or Collection.new(path: 'posts', site_id: site.id).documents
+
+# create new post
+post = Siteleaf::Documents.create({
+  :title            => 'My Post',
+  :body             => 'This is my first post.',
+  :collection_path  => 'posts',
+  :site_id          => site.id
 })
 
-# update page, add metadata
+# update post, add metadata
 post.title = 'New Title'
-post.meta = {'foo' => 'bar'}
+post.metadata = {'foo' => 'bar'}
 post.save
-
-# upload file
-asset = Siteleaf::File.create({
-  :file     => File.open("~/image.png"), 
-  :path     => "image.png"
-})
 
 # delete post
 post.delete
 
-# delete page by id
-Siteleaf::Page.delete('519719ddcc85910626000001')
+# get files in "uploads" collection
+files = site.uploads # or Collection.new(path: 'uploads', site_id: site.id).files
+
+# upload image into "uploads" collection
+file = Siteleaf::File.create({
+  :file             => File.new('~/image.png'), 
+  :path             => 'image.png'
+  :collection_path  => 'uploads',
+  :site_id          => site.id
+})
+
+# get source files
+files = site.source_files
+
+# upload source file
+file = Siteleaf::SourceFile.create({
+  :file     => File.new('~/foo.html'), 
+  :name     => '_includes/foo.html',
+  :site_id  => site.id
+})
+
+# delete file
+file.delete
+
+# delete file by name
+Siteleaf::SourceFile.new(name: '_includes/foo.html', site_id: site.id).delete
+
 ```
 
 Troubleshooting
