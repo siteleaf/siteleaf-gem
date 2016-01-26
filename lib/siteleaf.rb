@@ -5,18 +5,15 @@ require 'siteleaf/version'
 require 'siteleaf/git_hash'
 require 'siteleaf/client'
 require 'siteleaf/entity'
-require 'siteleaf/asset'
 require 'siteleaf/file'
-require 'siteleaf/upload'
 require 'siteleaf/job'
 require 'siteleaf/content'
 require 'siteleaf/page'
-require 'siteleaf/post'
 require 'siteleaf/collection'
 require 'siteleaf/document'
 require 'siteleaf/site'
+require 'siteleaf/source_file'
 require 'siteleaf/user'
-require 'patches/time_with_zone_encode_with'
 require 'digest/sha1'
 require 'rbconfig'
 require 'uri'
@@ -26,7 +23,7 @@ module Siteleaf
 
   @api_key = ENV['SITELEAF_API_KEY']
   @api_secret = ENV['SITELEAF_API_SECRET']
-  @api_base = 'https://api.v2.siteleaf.com'
+  @api_base = 'https://api.siteleaf.com'
   @api_version = 'v2'
 
   class << self
