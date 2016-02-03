@@ -1,5 +1,7 @@
-Siteleaf Gem
-============
+For v2 see: https://github.com/siteleaf/siteleaf-gem/tree/2.0.0.pre
+
+Siteleaf Gem (v1)
+=================
 
 - [Installation](#installation)
 - [Using the CLI](#using-the-cli)
