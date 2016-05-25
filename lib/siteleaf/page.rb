@@ -52,8 +52,10 @@ module Siteleaf
       meta.each{|m| attrs[m['key'].to_s.downcase] = m['value'].to_s == '' ? nil : m['value'].to_s.gsub("\r\n","\n")} unless meta.nil?
 
       unless assets.to_a.empty?
-        attrs['assets'] = assets.map do |asset|
-          asset.filename
+        attrs['assets'] = assets.map do |a|
+          asset = {'path' => "/uploads/#{a.filename}"}
+          a.meta.each{|m| asset[m['key'].to_s.downcase] = m['value'].to_s == '' ? nil : m['value'].to_s.gsub("\r\n","\n")} unless meta.nil?
+          asset
         end
       end
 
