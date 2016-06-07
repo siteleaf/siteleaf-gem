@@ -1,6 +1,6 @@
-For v2 see: https://github.com/siteleaf/siteleaf-gem/tree/2.0.0.pre
+**Note:** This version only applies to v1 sites, for v2 see: https://github.com/siteleaf/siteleaf-gem
 
-Siteleaf Gem (v1)
+Siteleaf v1 Gem
 =================
 
 - [Installation](#installation)
@@ -17,7 +17,7 @@ Installation
 
 The Siteleaf gem is available for installation on [Rubygems](https://rubygems.org/gems/siteleaf). To install run:
 
-    gem install siteleaf
+    gem install siteleaf '~>1'
 
 
 Using the CLI
@@ -89,7 +89,7 @@ Using this gem in your application
     
 To use this gem in your application, add the following to your Gemfile:
 
-    gem 'siteleaf', :git => 'git://github.com/siteleaf/siteleaf-gem.git'
+    gem 'siteleaf', '~>1`
 
 
 
