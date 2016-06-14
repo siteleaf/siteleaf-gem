@@ -17,7 +17,7 @@ Installation
 
 The Siteleaf gem is available for installation on [Rubygems](https://rubygems.org/gems/siteleaf). To install run:
 
-    gem install siteleaf '~>1'
+    gem install siteleaf -v '~>1'
 
 
 Using the CLI
@@ -193,7 +193,7 @@ Troubleshooting
 
 Try running:
 
-    sudo gem install siteleaf
+    sudo gem install siteleaf -v '~>1'
 
 
 Contributing
