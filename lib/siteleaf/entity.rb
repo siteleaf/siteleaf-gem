@@ -1,6 +1,6 @@
 module Siteleaf
   class Entity
-  
+
     attr_reader :error, :message
 
     def initialize(attributes = {})
@@ -9,7 +9,7 @@ module Siteleaf
 
     def self.all
       result = Client.get endpoint
-      result.map { |r| new(r) } if result.is_a? Array
+      result.map { |r| new(r) } if result.parsed_response.is_a? Array
     end
 
     def self.find(identifier)
@@ -20,7 +20,7 @@ module Siteleaf
     def self.create(attributes = {})
       new(attributes).save
     end
-    
+
     def self.delete(identifier)
       Client.delete "#{endpoint}/#{identifier}"
     end
@@ -60,11 +60,11 @@ module Siteleaf
     def create_endpoint
       self.class.endpoint
     end
-    
+
     def entity_endpoint
       "#{self.class.endpoint}/#{identifier}"
     end
-    
+
     def identifier
       id
     end

@@ -58,12 +58,13 @@ end
 
 def pull(site_id)
   print "Reading site...\n"
-  
+
   # get all the things
   site = Siteleaf::Site.find(site_id)
-  site_files = site.source_tree
+  site_files = site.source_files('.', recursive: true)
+
   updated_count = 0
-  
+
   # download unmatched files
   site_files.each do |file|
     sha = ::File.exist?(file.name) && Siteleaf::GitHash.file(file.name)
@@ -75,11 +76,11 @@ def pull(site_id)
       print "complete.\n"
     end
   end
-  
+
   # check for old files
   local_files = read_dir
   missing_files = []
-  local_files.each do |path| 
+  local_files.each do |path|
     missing_files << path if !site_files.find{|a| a.name.casecmp(path) == 0 }
   end
   if missing_files.empty?
@@ -105,23 +106,23 @@ end
 
 def push(site_id)
   print "Reading site...\n"
-  
+
   # get all the things
   site = Siteleaf::Site.find(site_id)
-  site_files = site.source_tree
+  site_files = site.source_files('.', recursive: true)
   local_files = read_dir
   updated_count = 0
-  
+
   # find changed files
   changed_files = local_files.reject do |path|
     file = site_files.find{|a| a.name.casecmp(path) == 0 }
     file && Siteleaf::GitHash.file(path) == file.sha
   end
-  changed_files.unshift('_config.yml') if changed_files.delete('_config.yml') 
-  
+  changed_files.unshift('_config.yml') if changed_files.delete('_config.yml')
+
   # upload changed files
-  changed_files.each do |path|  
-    print "Uploading #{path}..."   
+  changed_files.each do |path|
+    print "Uploading #{path}..."
     response = Siteleaf::SourceFile.create(site_id: site_id, name: path, file: ::File.new(path))
     if error = !response || response.error || response.message
       print (error) ? "error: #{error}\n" : "error.\n"
@@ -131,10 +132,10 @@ def push(site_id)
       print "complete.\n"
     end
   end
-  
+
   # check for old files
   missing_assets = []
-  site_files.each do |asset| 
+  site_files.each do |asset|
     missing_assets << asset if !local_files.find{|p| p.casecmp(asset.name) == 0 }
   end
   if missing_assets.empty?
@@ -160,7 +161,7 @@ end
 
 def import(file, quiet = true)
   job = Siteleaf::Site.import(file: ::File.new(file))
-  
+
   if quiet
     puts "=> Import queued.\n"
   else
@@ -180,7 +181,7 @@ end
 def publish(site_id, quiet = true)
   site = Siteleaf::Site.new(id: site_id)
   job = site.publish
-  
+
   if quiet
     puts "=> Publish queued.\n"
   else
@@ -209,7 +210,7 @@ def get_site_id
       Siteleaf.send "#{key}=", value
     end
   end
-  
+
   ENV['SITELEAF_SITE_ID'] || if settings = Siteleaf.load_settings('.siteleaf.yml')
     settings[:site_id]
   end
@@ -217,13 +218,13 @@ end
 
 def read_dir
   jekyll_config = ::File.exist?('_config.yml') ? YAML::load(::File.read('_config.yml')) : {}
-  
+
   ignore_paths = ['config.ru', '.*', '_site/*', 'Gemfile', 'Gemfile.lock']
   ignore_paths += ::File.read('.siteleafignore').split(/\r?\n/) if ::File.exists?('.siteleafignore')
   ignore_paths += jekyll_config['exclude'] if jekyll_config['exclude'].is_a? Array
-  
+
   Dir.glob("**/*").reject do |path|
-    ::File.directory?(path) || 
+    ::File.directory?(path) ||
     ignore_paths.any? {|i| ::File.fnmatch?(i, path, File::FNM_CASEFOLD) || ::File.fnmatch?(i, ::File.basename(path), File::FNM_CASEFOLD) }
   end
 end
