@@ -89,7 +89,7 @@ Using this gem in your application
     
 To use this gem in your application, add the following to your Gemfile:
 
-    gem 'siteleaf', '~>1`
+    gem 'siteleaf', '~>1'
 
 
 
