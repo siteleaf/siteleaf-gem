@@ -15,8 +15,8 @@ Gem::Specification.new do |gem|
 
   gem.required_ruby_version = '>= 1.9.3'
 
-  gem.add_dependency 'httparty', '>= 0.13.3'
-  gem.add_dependency 'httmultiparty', '>= 0.3.13'
+  gem.add_dependency 'httparty', '~> 0.14.0'
+  gem.add_dependency 'httmultiparty', '~> 0.3.13'
   gem.add_dependency 'psych', '>= 2.0.17'
   gem.add_dependency 'rack'
 
