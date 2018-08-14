@@ -17,17 +17,17 @@ module Siteleaf
 
     def source_files(dir = '.', opts = {})
       result = Client.get ::File.join(entity_endpoint, "source", dir), opts
-      result.map { |r| SourceFile.new(r.merge('site_id' => id)) } if result.parsed_response.is_a? Array
+      result.map { |r| SourceFile.new(r.merge('site_id' => id)) } if result.is_a? Array
     end
 
     def pages
       result = Client.get "#{entity_endpoint}/pages"
-      result.map { |r| Page.new(r) } if result.parsed_response.is_a? Array
+      result.map { |r| Page.new(r) } if result.is_a? Array
     end
 
     def collections
       result = Client.get "#{entity_endpoint}/collections"
-      result.map { |r| Collection.new(r) } if result.parsed_response.is_a? Array
+      result.map { |r| Collection.new(r) } if result.is_a? Array
     end
 
     def posts

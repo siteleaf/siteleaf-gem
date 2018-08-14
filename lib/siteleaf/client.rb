@@ -1,17 +1,17 @@
-require 'httmultiparty'
+require 'httparty'
 
 module Siteleaf
   class Client
     def self.auth(email, password)
-      begin
-        request = HTTParty.post(Siteleaf.api_url('auth'), {
-          :basic_auth => {:username => email, :password => password},
-          :headers => {"User-Agent" => "Siteleaf Gem/#{Siteleaf::VERSION}"}
-        })
-        return request.parsed_response # parse JSON
-      rescue => e
-        return 'error' => e.message # error
+      request = HTTParty.post(Siteleaf.api_url('auth'), {
+        :basic_auth => {:username => email, :password => password},
+        :headers => {"User-Agent" => "Siteleaf Gem/#{Siteleaf::VERSION}"}
+      })
+      response = request.parsed_response
+      if response.is_a?(Hash) && error = response['message'] || response['error']
+        raise error
       end
+      response
     end
 
     def self.get(path, params = {})
@@ -33,33 +33,28 @@ module Siteleaf
 
     def self.execute(method, path, params = nil)
       Siteleaf.load_settings if !Siteleaf.api_key
-      begin
-        if (method == :post || method == :put) && !params.has_key?('file') && !params.has_key?(:file)
-          request = HTTParty.send(method, Siteleaf.api_url(path), {
-            :body => params.to_json,
-            :basic_auth => {:username => Siteleaf.api_key, :password => Siteleaf.api_secret},
-            :headers => {
-              "Content-Type" => "application/json",
-              "User-Agent" => "Siteleaf Gem/#{Siteleaf::VERSION}"
-            },
-            :timeout => 300
-          })
-        else
-          request = HTTMultiParty.send(method, Siteleaf.api_url(path), {
-            :query => params,
-            :basic_auth => {:username => Siteleaf.api_key, :password => Siteleaf.api_secret},
-            :headers => {"User-Agent" => "Siteleaf Gem/#{Siteleaf::VERSION}"},
-            :timeout => 300
-          })
-        end
-        if request.respond_to?('parsed_response')
-          return request.parsed_response # parse JSON
-        else
-          return request # raw
-        end
-      rescue => e
-        return 'error' => e.message # error
+      
+      options = {
+        :basic_auth => {:username => Siteleaf.api_key, :password => Siteleaf.api_secret},
+        :headers => {"User-Agent" => "Siteleaf Gem/#{Siteleaf::VERSION}"},
+        :timeout => 300
+      }
+      
+      if method == :get || method == :delete
+        options[:query] = params
+      elsif params.has_key?('file') || params.has_key?(:file)
+        options[:body] = params
+      else
+        options[:body] = params.to_json
+        options[:headers]["Content-Type"] = "application/json"
       end
+      
+      request = HTTParty.send(method, Siteleaf.api_url(path), options)
+      response = request.parsed_response
+      if response.is_a?(Hash) && error = response['message'] || response['error']
+        raise error
+      end
+      response
     end
   end
 end

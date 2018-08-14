@@ -22,12 +22,12 @@ module Siteleaf
 
     def documents
       result = Client.get "#{entity_endpoint}/documents"
-      result.map { |r| Document.new(r) } if result.parsed_response.is_a? Array
+      result.map { |r| Document.new(r) } if result.is_a? Array
     end
 
     def files
       result = Client.get "#{entity_endpoint}/files"
-      result.map { |r| File.new(r) } if result.parsed_response.is_a? Array
+      result.map { |r| File.new(r) } if result.is_a? Array
     end
 
     def output?

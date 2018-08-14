@@ -1,7 +1,9 @@
 #!/usr/bin/env ruby
 
 require 'siteleaf'
+require 'jekyll'
 require 'fileutils'
+require 'pathutil'
 require 'open-uri'
 require 'tempfile'
 require 'yaml'
@@ -30,9 +32,9 @@ See https://github.com/siteleaf/siteleaf-gem for additional documentation.
 end
 
 def auth(re_auth = false)
-  Siteleaf.load_settings if !re_auth && !Siteleaf.api_key
+  Siteleaf.load_settings if !re_auth && !(Siteleaf.api_key && Siteleaf.api_secret)
 
-  if re_auth or !Siteleaf.api_key
+  if re_auth or !(Siteleaf.api_key && Siteleaf.api_secret)
     print 'Enter your Siteleaf email: '
     email = $stdin.gets.chomp
 
@@ -42,18 +44,17 @@ def auth(re_auth = false)
     system 'stty echo'
 
     puts "\nAuthorizing..."
-
-    if (auth = Siteleaf::Client.auth(email, password)) && (auth.is_a?(Hash)) && (auth.has_key?('api_key'))
+    
+    auth = Siteleaf::Client.auth(email, password)
+    if auth.is_a?(Hash) && auth.has_key?('api_key')
       Siteleaf.save_settings({api_key: auth['api_key'], api_secret: auth['api_secret']})
-      puts "=> Gem authorized." if re_auth
+      Siteleaf.load_settings
+      puts "=> Account authorized." if re_auth
       return true
     else
-      puts auth['error'] || "Could not authorize, check your email or password."
-      return false
+      raise "Could not authorize, check your email or password."
     end
   end
-rescue Exception => e
-  print "Error: #{e.message}\n"
 end
 
 def pull(site_id)
@@ -100,8 +101,6 @@ def pull(site_id)
       puts "=> #{missing_files.size} file(s) deleted.\n"
     end
   end
-rescue Exception => e
-  print "Error: #{e.message}\n"
 end
 
 def push(site_id)
@@ -109,6 +108,7 @@ def push(site_id)
 
   # get all the things
   site = Siteleaf::Site.find(site_id)
+  
   site_files = site.source_files('.', recursive: true)
   local_files = read_dir
   updated_count = 0
@@ -124,12 +124,11 @@ def push(site_id)
   changed_files.each do |path|
     print "Uploading #{path}..."
     response = Siteleaf::SourceFile.create(site_id: site_id, name: path, file: ::File.new(path))
-    if error = !response || response.error || response.message
-      print (error) ? "error: #{error}\n" : "error.\n"
-      return
-    else
-      updated_count += 1
-      print "complete.\n"
+    updated_count += 1
+    print "complete.\n"
+    if response.name && response.name != path
+      local_files.push(response.name)
+      puts "Warning: Remote filename has been normalized to `#{response.name}`."
     end
   end
 
@@ -155,8 +154,6 @@ def push(site_id)
       puts "=> #{missing_assets.size} file(s) deleted.\n"
     end
   end
-rescue Exception => e
- print "Error: #{e.message}\n"
 end
 
 def import(file, quiet = true)
@@ -174,8 +171,6 @@ def import(file, quiet = true)
     end
     puts "=> Import completed.\n"
   end
-rescue Exception => e
-  print "Error: #{e.message}\n"
 end
 
 def publish(site_id, quiet = true)
@@ -194,8 +189,6 @@ def publish(site_id, quiet = true)
     end
     puts "=> Publish completed.\n"
   end
-rescue Exception => e
-  print "Error: #{e.message}\n"
 end
 
 def config(site)
@@ -217,94 +210,98 @@ def get_site_id
 end
 
 def read_dir
-  jekyll_config = ::File.exist?('_config.yml') ? YAML::load(::File.read('_config.yml')) : {}
+  jekyll_site = Jekyll::Site.new(Jekyll.configuration(quiet: true))
 
   ignore_paths = ['config.ru', '.*', '_site/*', 'Gemfile', 'Gemfile.lock']
   ignore_paths += ::File.read('.siteleafignore').split(/\r?\n/) if ::File.exists?('.siteleafignore')
-  ignore_paths += jekyll_config['exclude'] if jekyll_config['exclude'].is_a? Array
+  ignore_paths += jekyll_site.exclude
+  
+  entry_filter = Jekyll::EntryFilter.new(jekyll_site)
 
   Dir.glob("**/*").reject do |path|
-    ::File.directory?(path) ||
-    ignore_paths.any? {|i| ::File.fnmatch?(i, path, File::FNM_CASEFOLD) || ::File.fnmatch?(i, ::File.basename(path), File::FNM_CASEFOLD) }
+    ::File.directory?(path) || entry_filter.glob_include?(ignore_paths, path)
   end
 end
 
-case ARGV[0]
-when '-v', '--version', 'version'
-  puts Siteleaf::VERSION
-when '-h', '--help', 'help'
-  puts help
-when 'auth'
-  auth true
-when 'c', 'config', 'setup'
-  if auth != false
-    if site = Siteleaf::Site.find_by_domain(ARGV[1])
-      config site
-    else
-      puts "No site found for `#{ARGV[1]}`, run `siteleaf new #{ARGV[1]}` to create it.\n"
+begin
+  case ARGV[0]
+  when '-v', '--version', 'version'
+    puts Siteleaf::VERSION
+  when '-h', '--help', 'help'
+    puts help
+  when 'auth'
+    auth true
+  when 'c', 'config', 'setup'
+    if auth != false
+      if site = Siteleaf::Site.find_by_domain(ARGV[1])
+        config site
+      else
+        raise "No site found for `#{ARGV[1]}`, run `siteleaf new #{ARGV[1]}` to create it.\n"
+      end
     end
-  end
-when 'n', 'new'
-  if auth != false
-    if (site = Siteleaf::Site.create(:title => ARGV[1], :domain => ARGV[1])) && (!site.error)
+  when 'n', 'new'
+    if auth != false
+      site = Siteleaf::Site.create(:title => ARGV[1], :domain => ARGV[1])
       dir = ARGV.size >= 3 ? ARGV[2] : ARGV[1]
       Dir.mkdir(dir) unless ::File.directory?(dir)
       Dir.chdir(dir)
       config site
-    else
-      puts "Could not create site `#{ARGV[1]}`.\n"
     end
-  end
-when 'pull'
-  if ARGV.size == 1
+  when 'pull'
+    if ARGV.size == 1
+      site_id = get_site_id
+      if auth != false
+        if site_id
+          pull(site_id)
+        else
+          raise "Site not configured, run `siteleaf config yoursite.com`.\n"
+        end
+      end
+    else
+     raise "`#{ARGV.join(' ')}` command not found.\n"
+    end
+  when 'push'
+    if ARGV.size == 1
+      site_id = get_site_id
+      if auth != false
+        if site_id
+          push(site_id)
+        else
+          raise "Site not configured, run `siteleaf config yoursite.com`.\n"
+        end
+      end
+    else
+      raise "`#{ARGV.join(' ')}` command not found.\n"
+    end
+  when 'publish'
     site_id = get_site_id
     if auth != false
+      quiet = %w[-q --quiet].include?(ARGV[1]) && ARGV[1]
       if site_id
-        pull(site_id)
+        publish(site_id, quiet)
       else
-        puts "Site not configured, run `siteleaf config yoursite.com`.\n"
+        raise "Site not configured, run `siteleaf config yoursite.com`.\n"
+      end
+    end
+  when 'import'
+    site_id = get_site_id
+    if auth != false
+      file = ARGV[1]
+      if File.extname(file) != '.zip'
+        raise "Import file must be ZIP format.\n"
+      elsif !File.exist?(file)
+        raise "Import file not found.\n"
+      else
+        quiet = %w[-q --quiet].include?(ARGV[2]) && ARGV[2]
+        import(file, quiet)
       end
     end
   else
-   puts "`#{ARGV.join(' ')}` command not found.\n"
+    puts "Error: `#{ARGV[0]}` command not found.\n"
+    puts help
+    exit(1)
   end
-when 'push'
-  if ARGV.size == 1
-    site_id = get_site_id
-    if auth != false
-      if site_id
-        push(site_id)
-      else
-        puts "Site not configured, run `siteleaf config yoursite.com`.\n"
-      end
-    end
-  else
-    puts "`#{ARGV.join(' ')}` command not found.\n"
-  end
-when 'publish'
-  site_id = get_site_id
-  if auth != false
-    quiet = %w[-q --quiet].include?(ARGV[1]) && ARGV[1]
-    if site_id
-      publish(site_id, quiet)
-    else
-      puts "Site not configured, run `siteleaf config yoursite.com`.\n"
-    end
-  end
-when 'import'
-  site_id = get_site_id
-  if auth != false
-    file = ARGV[1]
-    if File.extname(file) != '.zip'
-      puts "Import file must be ZIP format.\n"
-    elsif !File.exist?(file)
-      puts "Import file not found.\n"
-    else
-      quiet = %w[-q --quiet].include?(ARGV[2]) && ARGV[2]
-      import(file, quiet)
-    end
-  end
-else
-  puts "`#{ARGV[0]}` command not found.\n"
-  puts help
+rescue Exception => e
+  puts "Error: #{e.message}\n"
+  exit(1)
 end

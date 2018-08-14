@@ -17,9 +17,7 @@ module Siteleaf
     end
 
     def to_file
-      response = Client.get(::File.join("sites", site_id, "source", "#{URI.escape(identifier)}?download"))
-      raise response['message'] if response.parsed_response.is_a?(Hash) && response['message'] # indicates API error
-      response.body
+      Client.get(::File.join("sites", site_id, "source", "#{URI.escape(identifier)}?download"))
     end
 
   end

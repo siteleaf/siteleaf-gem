@@ -9,7 +9,7 @@ module Siteleaf
 
     def self.all
       result = Client.get endpoint
-      result.map { |r| new(r) } if result.parsed_response.is_a? Array
+      result.map { |r| new(r) } if result.is_a? Array
     end
 
     def self.find(identifier)
@@ -31,9 +31,11 @@ module Siteleaf
       else
         result = Client.post create_endpoint, attributes
       end
-      if result
+      if result.is_a?(Hash)
         self.attributes = result
         return self
+      else
+        raise 'Invalid response'
       end
     end
 
