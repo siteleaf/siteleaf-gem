@@ -23,12 +23,12 @@ module Siteleaf
     end
 
     def pages
-      result = Client.get "sites/#{self.id}/pages"
+      result = Client.get "sites/#{self.id}/pages?include=user"
       result.map { |r| Page.new(r) } if result
     end
 
     def posts
-      result = Client.get "sites/#{self.id}/posts"
+      result = Client.get "sites/#{self.id}/posts?include=user"
       result.map { |r| Post.new(r) } if result
     end
 

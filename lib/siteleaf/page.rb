@@ -1,8 +1,12 @@
 module Siteleaf
   class Page < Entity
 
-    attr_accessor :title, :custom_slug, :body, :visibility, :published_at, :user_id, :site_id, :parent_id, :meta
+    attr_accessor :title, :custom_slug, :body, :visibility, :published_at, :user_id, :site_id, :parent_id, :meta, :user
     attr_reader :id, :slug, :url, :created_at, :updated_at, :assets
+    
+    def self.find(id)
+      super "#{id}?include=user"
+    end
 
     def create_endpoint
       "sites/#{self.site_id}/pages"
@@ -48,6 +52,7 @@ module Siteleaf
       attrs['title'] = title
       attrs['date'] = Time.parse(published_at).utc if published_at
       attrs['published'] = false if !published?
+      attrs['author'] = user['fullname'] if user && user['fullname']
 
       meta.each{|m| attrs[m['key'].to_s.downcase] = m['value'].to_s == '' ? nil : m['value'].to_s.gsub("\r\n","\n")} unless meta.nil?
 
