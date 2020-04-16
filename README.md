@@ -11,7 +11,7 @@ Siteleaf v2 Gem
 Installation
 ------------
 
-The Siteleaf gem is available for installation on [Rubygems](https://rubygems.org/gems/siteleaf). To install run:
+The [Siteleaf](https://www.siteleaf.com) gem is available for installation on [Rubygems](https://rubygems.org/gems/siteleaf). To install run:
 
     gem install siteleaf
     
