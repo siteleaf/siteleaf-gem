@@ -5,7 +5,9 @@ module Siteleaf
     attr_reader :name, :url, :download_url, :type, :filesize, :sha, :created_at, :updated_at, :user_id
 
     def create_endpoint
-      ::File.join("sites", site_id, "source", URI.escape(identifier))
+      uri = URI.encode(identifier)
+      uri = uri.gsub('[', '%5B').gsub(']', '%5D') # workaround for https://bugs.ruby-lang.org/issues/12235
+      ::File.join('sites', site_id, 'source', uri)
     end
 
     def entity_endpoint
@@ -17,7 +19,7 @@ module Siteleaf
     end
 
     def to_file
-      Client.get(::File.join("sites", site_id, "source", "#{URI.escape(identifier)}?download"))
+      Client.get("#{entity_endpoint}?download")
     end
 
   end
