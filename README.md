@@ -3,6 +3,7 @@
 Siteleaf v2 Gem
 ===============
 
+- [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Using the CLI](#using-the-cli)
 - [Using this gem in your application](#using-this-gem-in-your-application)
@@ -10,10 +11,17 @@ Siteleaf v2 Gem
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 
+
+Prerequisites
+-------------
+
+Install Ruby and RubyGems: https://jekyllrb.com/docs/installation/
+
+
 Installation
 ------------
 
-The [Siteleaf](https://www.siteleaf.com) gem is available for installation on [Rubygems](https://rubygems.org/gems/siteleaf). To install run:
+The [Siteleaf](https://www.siteleaf.com) gem is available for installation on [RubyGems](https://rubygems.org/gems/siteleaf). To install run:
 
     gem install siteleaf
     
