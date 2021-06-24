@@ -19,6 +19,7 @@ Commands:
   pull                Pulls files for configured site from Siteleaf
   push                Pushes all files in dir to configured site
   publish             Publish website to hosting provider
+  preview             Generate cloud preview
   help                Prints this help document
   version             Prints the siteleaf gem version
 
@@ -191,6 +192,24 @@ def publish(site_id, quiet = true)
   end
 end
 
+def preview(site_id, quiet = true)
+  site = Siteleaf::Site.new(id: site_id)
+  job = site.preview
+
+  if quiet
+    puts "=> Preview queued.\n"
+  else
+    last_msg = nil
+    job.stream do |s|
+      if (msg = s["message"]) && (msg != last_msg)
+        puts msg
+        last_msg = msg
+      end
+    end
+    puts "=> Preview completed: https://#{site_id}.cloud-preview.siteleaf.com\n"
+  end
+end
+
 def config(site)
   Siteleaf.save_settings({site_id: site.id}, '.siteleaf.yml')
   puts "=> Site configured."
@@ -279,6 +298,16 @@ begin
       quiet = %w[-q --quiet].include?(ARGV[1]) && ARGV[1]
       if site_id
         publish(site_id, quiet)
+      else
+        raise "Site not configured, run `siteleaf config yoursite.com`.\n"
+      end
+    end
+  when 'preview'
+    site_id = get_site_id
+    if auth != false
+      quiet = %w[-q --quiet].include?(ARGV[1]) && ARGV[1]
+      if site_id
+        preview(site_id, quiet)
       else
         raise "Site not configured, run `siteleaf config yoursite.com`.\n"
       end

@@ -42,6 +42,11 @@ module Siteleaf
       result = Client.post "#{entity_endpoint}/publish", {}
       Job.new(id: result["job_id"]) if result
     end
+    
+    def preview
+      result = Client.post "#{entity_endpoint}/preview", {}
+      Job.new(id: result["job_id"]) if result
+    end
 
     def full_url
       "http://#{domain}"
