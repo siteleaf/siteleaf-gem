@@ -1,7 +1,7 @@
 <img alt="Siteleaf" src="https://learn.siteleaf.com/assets/images/logo.svg" width="10%">
 
-Siteleaf v2 Gem
-===============
+Siteleaf v2 Gem & CLI
+=====================
 
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
