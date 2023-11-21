@@ -48,6 +48,11 @@ module Siteleaf
       Job.new(id: result["job_id"]) if result
     end
 
+    def users
+      result = Client.get "#{entity_endpoint}/users"
+      result.map { |r| User.new(r) } if result.is_a? Array
+    end
+
     def full_url
       "http://#{domain}"
     end
