@@ -82,7 +82,7 @@ To publish your site changes to your hosting provider, run the following command
 
 **Clean unused uploads:**
 
-To check for unused uploads and tidy up disk space (runs locally):
+To check for unused uploads and tidy up disk space (runs locally using [The Silver Searcher](https://geoff.greer.fm/ag/) if available):
 
     siteleaf clean _uploads
     
