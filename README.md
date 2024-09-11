@@ -79,6 +79,12 @@ To download your theme (or the default theme for new sites) from Siteleaf, run t
 To publish your site changes to your hosting provider, run the following command:
 
     siteleaf publish
+
+**Clean unused uploads:**
+
+To check for unused uploads and tidy up disk space (runs locally):
+
+    siteleaf clean _uploads
     
 **For a full list of commands, run:**
 

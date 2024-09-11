@@ -16,7 +16,6 @@ Gem::Specification.new do |gem|
   gem.required_ruby_version = '>= 1.9.3'
 
   gem.add_dependency 'httparty', '>= 0.16.0'
-  gem.add_dependency 'psych', '>= 2.1.0'
   gem.add_dependency 'jekyll', '>= 1.4.1'
   gem.add_dependency 'rack'
 

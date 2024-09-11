@@ -16,6 +16,7 @@ Commands:
   auth                Login in with your credentials
   c, config DOMAIN    Configure an existing directory
   n, new DOMAIN       Creates new site on siteleaf.net
+  clean               Clean up unused uploads
   pull                Pulls files for configured site from Siteleaf
   push                Pushes all files in dir to configured site
   publish             Publish website to hosting provider
@@ -93,7 +94,7 @@ def pull(site_id)
       puts path
     end
     print '(y/n)? '
-    if $stdin.gets.chomp == 'y'
+    if $stdin.gets.chomp.downcase == 'y'
       missing_files.each do |path|
         print "Deleting #{path}..."
         ::File.delete(path)
@@ -207,6 +208,42 @@ def preview(site_id, quiet = true)
       end
     end
     puts "=> Preview completed: https://#{site_id}.cloud-preview.siteleaf.com\n"
+  end
+end
+
+def clean(path = '_uploads')
+  searcher = if system('which ag', out: File::NULL)
+    ['ag', '-lQ']
+  else
+    puts "\nWarning: Silver Searcher not found, install for faster results (https://geoff.greer.fm/ag/)\n"
+    ['grep', '-lr']
+  end
+
+  puts "\nBuilding Jekyll site..."
+  system 'bundle exec jekyll build --future --unpublished --drafts'
+
+  puts "\nFinding unused files..."
+  unused = Dir.glob("#{path}/**/*").select do |file|
+    next unless File.file? file
+    escaped = Jekyll::URL.escape_path file
+
+    found = system(*searcher, escaped.sub(/^_/, '/'), '_site', out: File::NULL) ||
+            system(*searcher,    file.sub(/^_/, '/'), '_site', out: File::NULL)
+
+    if !found
+      puts file
+      true
+    end
+  end
+
+  if unused.length == 0
+    puts "\nNo unused files found."
+  else
+    puts "=> Delete above #{unused.length} file(s)? (y/n)"
+    if $stdin.gets.chomp.downcase == 'y'
+      FileUtils.rm unused
+      puts "=> #{unused.size} file(s) deleted."
+    end
   end
 end
 
@@ -325,6 +362,8 @@ begin
         import(file, quiet)
       end
     end
+  when 'clean'
+    ARGV[1] ? clean(ARGV[1]) : clean
   else
     puts "Error: `#{ARGV[0]}` command not found.\n"
     puts help
